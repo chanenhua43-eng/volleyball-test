@@ -1,1183 +1,1242 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>排球「有球必 in」差異化評量系統 (v5.2 逐球歷程版)</title>
+  <title>排球「有球必 in」差異化評量系統 (v5.2)</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['"Noto Sans TC"', 'system-ui', 'sans-serif'],
-            num: ['"Inter"', 'sans-serif'],
-          },
-          colors: {
-            brand: { navy: '#0F172A', teal: '#0D9488', amber: '#F59E0B', surface: '#F8FAFC' }
-          }
-        }
-      }
-    }
-  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
   <style>
-    body { background-color: #F8FAFC; -webkit-tap-highlight-color: transparent; }
-    .touch-btn { min-height: 44px; user-select: none; transition: transform 0.08s ease, background-color 0.15s ease, border-color 0.15s ease, opacity 0.2s ease; }
-    .touch-btn:active { transform: scale(0.96); }
-    .svg-role-group { transition: opacity 0.3s ease, filter 0.3s ease; }
-    .svg-dimmed { opacity: 0.22; }
-    .svg-highlighted { opacity: 1; filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.8)); }
-    @keyframes dashFlow { to { stroke-dashoffset: -24; } }
-    .animate-flight { stroke-dasharray: 6 6; animation: dashFlow 1s linear infinite; }
+    body {
+      font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f1f5f9;
+      color: #0f172a;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .score-btn {
+      transition: all 0.14s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
+    }
+    .score-btn:active {
+      transform: scale(0.95);
+    }
+    .tab-active {
+      background-color: #f59e0b;
+      color: #0f172a;
+      font-weight: 800;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+    }
+    .tab-inactive {
+      color: #cbd5e1;
+      font-weight: 600;
+    }
+    .role-btn-active {
+      background-color: #0f172a;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
   </style>
 </head>
-<body class="text-slate-800 pb-24">
+<body class="pb-20">
 
-  <!-- Toast 提示容器 -->
-  <div id="toast-container" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 w-11/12 max-w-md pointer-events-none"></div>
-
-  <!-- 頂部固定導覽與狀態列 -->
-  <header class="bg-brand-navy text-white shadow-lg sticky top-0 z-40">
-    <div class="max-w-2xl mx-auto px-3 sm:px-4 pt-3 pb-2.5">
-      <div class="flex items-center justify-between gap-2 mb-2.5">
-        <div class="flex items-center gap-2.5 min-w-0">
-          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-brand-amber text-brand-navy flex items-center justify-center text-lg sm:text-xl shadow-sm shrink-0">
-            <i class="fa-solid fa-volleyball"></i>
+  <!-- 頂部固定導覽列 -->
+  <header class="sticky top-0 z-40 bg-slate-900 text-white shadow-lg border-b border-slate-800">
+    <div class="max-w-3xl mx-auto px-3 pt-2.5 pb-2">
+      <div class="flex items-center justify-between gap-2 mb-2">
+        <div class="flex items-center gap-2 min-w-0">
+          <div class="w-8 h-8 rounded-full bg-amber-400 text-slate-900 flex items-center justify-center font-black text-base shrink-0 shadow">
+            🏐
           </div>
           <div class="min-w-0">
-            <span class="text-[10px] font-black bg-teal-500/20 text-teal-300 border border-teal-400/30 px-2 py-0.5 rounded-full">大一體育・逐球歷程紀錄版</span>
-            <h1 class="text-sm sm:text-lg font-black tracking-tight text-white truncate mt-0.5">排球「有球必 in」差異化評量系統 (v5.2)</h1>
+            <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 mb-0.5">
+              大一體育 · 逐球歷程紀錄版
+            </span>
+            <h1 class="text-sm sm:text-base font-black tracking-tight truncate">
+              排球「有球必 in」差異化評量系統 (v5.2)
+            </h1>
           </div>
         </div>
+
         <div class="flex items-center gap-1.5 shrink-0">
-          <button type="button" onclick="toggleDrawer('backup-drawer')"
-            class="touch-btn min-h-0 py-1.5 px-2.5 flex items-center gap-1 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-[11px] font-bold text-white">
-            <i class="fa-solid fa-clock-rotate-left text-brand-amber"></i>
-            <span class="hidden sm:inline">紀錄</span>
-            <span id="header-backup-count" class="font-num bg-brand-amber text-brand-navy px-1.5 rounded-full text-[10px] font-black">0</span>
+          <!-- 本機備份按鈕 -->
+          <button onclick="openBackupModal()" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-2.5 py-1.5 rounded-full border border-slate-700 transition">
+            <span>🕒</span>
+            <span id="backupCountBadge" class="bg-amber-400 text-slate-900 text-[11px] font-black px-1.5 rounded-full">0</span>
           </button>
-          <button type="button" onclick="toggleDrawer('gas-drawer')"
-            class="touch-btn min-h-0 py-1.5 px-2.5 flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-[11px] font-bold text-white">
-            <span id="header-gas-dot" class="w-2 h-2 rounded-full bg-rose-400 animate-pulse"></span>
-            <span id="header-gas-text">試算表未設定</span>
+
+          <!-- 試算表連線狀態按鈕 -->
+          <button id="gasStatusBtn" onclick="toggleGasPanel()" class="flex items-center gap-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold px-2.5 py-1.5 rounded-full transition">
+            <span id="gasStatusDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="gasStatusText">試算表已連線</span>
           </button>
         </div>
       </div>
 
-      <!-- 三合一無縫切換分頁列 -->
-      <nav class="grid grid-cols-3 gap-1.5 bg-slate-900/90 p-1 rounded-2xl border border-slate-700/80">
-        <button type="button" onclick="switchTab('guide')" id="nav-tab-guide"
-          class="touch-btn min-h-0 py-2.5 px-1.5 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-1 bg-brand-amber text-brand-navy shadow">
-          <i class="fa-solid fa-map-location-dot"></i><span>① 操作方式</span>
+      <!-- 三合一主分頁切換 -->
+      <nav class="grid grid-cols-3 gap-1 bg-slate-800/90 p-1 rounded-xl border border-slate-700/80">
+        <button id="tab-guide" onclick="switchTab('guide')" class="tab-active py-1.5 px-2 rounded-lg text-xs sm:text-sm flex items-center justify-center gap-1 transition">
+          <span>🗺️</span><span>① 操作方式</span>
         </button>
-        <button type="button" onclick="switchTab('pretest')" id="nav-tab-pretest"
-          class="touch-btn min-h-0 py-2.5 px-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1 text-slate-300 hover:bg-white/10">
-          <i class="fa-solid fa-stopwatch"></i><span>② 預試 (3組)</span>
+        <button id="tab-pretest" onclick="switchTab('pretest')" class="tab-inactive py-1.5 px-2 rounded-lg text-xs sm:text-sm flex items-center justify-center gap-1 transition">
+          <span>⏱️</span><span>② 預試 (3組)</span>
         </button>
-        <button type="button" onclick="switchTab('formal')" id="nav-tab-formal"
-          class="touch-btn min-h-0 py-2.5 px-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1 text-slate-300 hover:bg-white/10">
-          <i class="fa-solid fa-clipboard-check"></i><span>③ 正式 (5組)</span>
+        <button id="tab-formal" onclick="switchTab('formal')" class="tab-inactive py-1.5 px-2 rounded-lg text-xs sm:text-sm flex items-center justify-center gap-1 transition">
+          <span>📋</span><span>③ 正式 (5組)</span>
         </button>
       </nav>
     </div>
+
+    <!-- 折疊式 Google Sheet 設定面板 -->
+    <div id="gasPanel" class="hidden bg-slate-800 border-t border-slate-700 px-3 py-3 text-xs">
+      <div class="max-w-3xl mx-auto space-y-2.5">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-amber-300">☁️ Google Sheet 雲端同步設定（已內建預設連線）</span>
+          <button onclick="toggleGasPanel()" class="text-slate-400 hover:text-white px-2 py-0.5">✕ 關閉</button>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-2">
+          <input id="gasUrlInput" type="url" placeholder="貼上 Google Apps Script 部署網址 (https://script.google.com/...)"
+            class="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-amber-400" />
+          <div class="flex gap-1.5">
+            <button onclick="saveGasUrl()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold px-3 py-2 rounded-lg transition">儲存網址</button>
+            <button onclick="resetDefaultGasUrl()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold px-3 py-2 rounded-lg transition">恢復預設</button>
+            <button onclick="openGasCodeModal()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-3 py-2 rounded-lg transition">GAS 程式碼</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </header>
 
-  <!-- 全域抽屜面板：Google Sheet 連線設定 & 本機紀錄備份 -->
-  <div class="max-w-2xl mx-auto px-4 pt-3 space-y-3">
-    <!-- Google Sheet 雲端同步設定面板 -->
-    <section id="gas-drawer" class="hidden bg-white rounded-3xl shadow-md border-2 border-slate-300 p-4 space-y-3">
-      <div class="flex items-center justify-between">
-        <h2 class="text-sm font-black text-brand-navy flex items-center gap-2">
-          <i class="fa-solid fa-cloud text-brand-teal"></i>Google Sheet 雲端同步設定（共用連線）
-        </h2>
-        <button type="button" onclick="toggleDrawer('gas-drawer')" class="text-slate-400 hover:text-slate-700 px-2 py-1"><i class="fa-solid fa-xmark"></i></button>
+  <main class="max-w-3xl mx-auto px-3 pt-3 space-y-4">
+
+    <!-- ==================== 分頁 ①：活動操作方式 ==================== -->
+    <section id="view-guide" class="space-y-4">
+      <!-- 活動目標卡 -->
+      <div class="bg-slate-900 text-white rounded-2xl p-4 shadow-md border border-slate-800">
+        <span class="inline-block text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 mb-2">
+          ◎ 接發球／救球（發展期）-4 · 活動目標
+        </span>
+        <p class="text-sm sm:text-base leading-relaxed font-medium text-slate-100">
+          能在發球—接發球循環練習中根據同儕的觀察紀錄與回饋修正自己的動作（判斷軌跡、迅速移動腳步及接發球之角度與力量控制），以將來球穩定地傳到有利舉球的位置。
+        </p>
       </div>
-      <p class="text-xs text-slate-500 leading-relaxed">
-        貼上教師部署的 <strong>Google Apps Script Web App URL</strong>，預試與正式測驗將自動寫入「預試檢測紀錄（36欄）」與「正式測驗紀錄（68欄）」工作表，完整保留每一球過程。
-      </p>
-      <div class="flex flex-col sm:flex-row gap-2">
-        <input type="url" id="gas-url-input" placeholder="https://script.google.com/macros/s/AKfycb.../exec"
-          class="flex-1 border-2 border-slate-300 focus:border-brand-navy rounded-xl px-3 py-2 text-xs font-mono outline-none" />
-        <div class="flex gap-2">
-          <button type="button" onclick="saveGasUrl()" class="touch-btn min-h-0 py-2 px-4 bg-brand-navy hover:bg-slate-800 text-white font-black rounded-xl text-xs">儲存網址</button>
-          <button type="button" onclick="testGasConnection()" class="touch-btn min-h-0 py-2 px-3 bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 font-black rounded-xl text-xs">測試連線</button>
+
+      <!-- 半場三組站位與輪替圖解 -->
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="font-black text-base text-slate-800 flex items-center gap-2">
+            <span class="w-1.5 h-5 bg-teal-500 rounded-full"></span>
+            半場三組站位與輪替圖解
+          </h2>
+          <span class="text-xs text-slate-400 font-medium">點選角色看任務</span>
+        </div>
+
+        <!-- 角色切換按鈕 -->
+        <div class="grid grid-cols-4 gap-1.5 bg-slate-100 p-1 rounded-xl">
+          <button onclick="highlightRole('all')" id="roleBtn-all" class="role-btn-active py-1.5 rounded-lg text-xs font-bold transition">全部視角</button>
+          <button onclick="highlightRole('A')" id="roleBtn-A" class="py-1.5 rounded-lg text-xs font-bold text-slate-600 transition">A組 發球</button>
+          <button onclick="highlightRole('B')" id="roleBtn-B" class="py-1.5 rounded-lg text-xs font-bold text-slate-600 transition">B組 接發</button>
+          <button onclick="highlightRole('C')" id="roleBtn-C" class="py-1.5 rounded-lg text-xs font-bold text-slate-600 transition">C組 觀察</button>
+        </div>
+
+        <!-- 動態任務提示框 -->
+        <div id="roleHintBox" class="bg-teal-50 border border-teal-200 rounded-xl p-3 text-xs sm:text-sm text-teal-900 font-medium flex items-start gap-2">
+          <span class="text-base">👥</span>
+          <span id="roleHintText">每半場分 A、B、C 三組輪替：A 發球、B 接球進目標區、C 場邊同步觀察並記錄每一球過程與分數。</span>
+        </div>
+
+        <!-- SVG 場地示意圖 -->
+        <div class="bg-slate-50 rounded-xl p-2 border border-slate-200 overflow-hidden">
+          <svg viewBox="0 0 600 280" class="w-full h-auto select-none">
+            <!-- 球場草綠底色 -->
+            <rect x="110" y="45" width="380" height="190" rx="6" fill="#d9f99d" stroke="#84cc16" stroke-width="2" />
+            <!-- 中線（球網） -->
+            <line x1="300" y1="35" x2="300" y2="245" stroke="#0f172a" stroke-width="4" />
+            <rect x="282" y="18" width="36" height="18" rx="4" fill="#0f172a" />
+            <text x="300" y="30" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="bold">球網</text>
+            <!-- 兩條三米線（虛線框） -->
+            <rect x="245" y="45" width="55" height="95" fill="none" stroke="#0284c7" stroke-width="2" stroke-dasharray="5,4" />
+            <rect x="245" y="140" width="55" height="95" fill="none" stroke="#16a34a" stroke-width="2" stroke-dasharray="5,4" />
+            <!-- 半場中隔虛線 -->
+            <line x1="110" y1="140" x2="490" y2="140" stroke="#65a30d" stroke-width="2" stroke-dasharray="6,5" />
+
+            <!-- 目標得分区（舉球位） -->
+            <rect x="260" y="60" width="26" height="65" rx="3" fill="#15803d" />
+            <rect x="260" y="155" width="26" height="65" rx="3" fill="#0284c7" />
+            <rect x="225" y="246" width="96" height="20" rx="10" fill="#0f172a" />
+            <text x="273" y="259" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="bold">目標落地區（舉球位）</text>
+
+            <!-- C組 觀察員 -->
+            <g id="svg-role-C" class="transition-opacity duration-200">
+              <circle cx="145" cy="24" r="14" fill="#f97316" />
+              <circle cx="140" cy="21" r="2" fill="#fff" /><circle cx="150" cy="21" r="2" fill="#fff" />
+              <path d="M 139 27 Q 145 32 151 27" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" />
+              <rect x="165" y="13" width="84" height="22" rx="11" fill="#ffedd5" stroke="#fb923c" />
+              <text x="207" y="27" text-anchor="middle" fill="#9a3412" font-size="10" font-weight="bold">C組 觀察與記錄</text>
+
+              <circle cx="145" cy="256" r="14" fill="#f97316" />
+              <circle cx="140" cy="253" r="2" fill="#fff" /><circle cx="150" cy="253" r="2" fill="#fff" />
+              <path d="M 139 259 Q 145 264 151 259" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" />
+              <text x="168" y="260" fill="#9a3412" font-size="11" font-weight="bold">C</text>
+            </g>
+
+            <!-- B組 接發球 -->
+            <g id="svg-role-B" class="transition-opacity duration-200">
+              <text x="25" y="144" fill="#334155" font-size="13" font-weight="bold">接</text>
+              <!-- 上半場 B -->
+              <circle cx="62" cy="92" r="13" fill="#fff" stroke="#16a34a" stroke-width="2.5" />
+              <circle cx="96" cy="92" r="13" fill="#fff" stroke="#16a34a" stroke-width="2.5" />
+              <line x1="112" y1="92" x2="146" y2="92" stroke="#0f172a" stroke-width="2" stroke-dasharray="4,3" />
+              <polygon points="146,88 154,92 146,96" fill="#0f172a" />
+              <circle cx="170" cy="92" r="14" fill="#dcfce7" stroke="#16a34a" stroke-width="2.5" />
+              <text x="170" y="118" text-anchor="middle" fill="#166534" font-size="11" font-weight="bold">B</text>
+
+              <!-- 下半場 B -->
+              <circle cx="62" cy="188" r="13" fill="#fff" stroke="#0284c7" stroke-width="2.5" />
+              <circle cx="96" cy="188" r="13" fill="#fff" stroke="#0284c7" stroke-width="2.5" />
+              <line x1="112" y1="188" x2="146" y2="188" stroke="#0f172a" stroke-width="2" stroke-dasharray="4,3" />
+              <polygon points="146,184 154,188 146,192" fill="#0f172a" />
+              <circle cx="170" cy="188" r="14" fill="#e0f2fe" stroke="#0284c7" stroke-width="2.5" />
+              <text x="170" y="168" text-anchor="middle" fill="#075985" font-size="11" font-weight="bold">B</text>
+            </g>
+
+            <!-- A組 發球 -->
+            <g id="svg-role-A" class="transition-opacity duration-200">
+              <text x="565" y="144" fill="#334155" font-size="13" font-weight="bold">發</text>
+              <!-- 上半場 A -->
+              <text x="392" y="96" fill="#166534" font-size="11" font-weight="bold">A</text>
+              <circle cx="430" cy="92" r="14" fill="#dcfce7" stroke="#16a34a" stroke-width="2.5" />
+              <circle cx="468" cy="92" r="13" fill="#fff" stroke="#16a34a" stroke-width="2.5" />
+              <circle cx="506" cy="92" r="13" fill="#fff" stroke="#16a34a" stroke-width="2.5" />
+              <circle cx="542" cy="92" r="13" fill="#fff" stroke="#16a34a" stroke-width="2.5" />
+              <!-- 發球拋物線 上 -->
+              <path d="M 416 84 Q 300 22 186 80" stroke="#0f172a" stroke-width="2" fill="none" />
+              <polygon points="189,75 181,83 192,83" fill="#0f172a" />
+
+              <!-- 下半場 A -->
+              <text x="392" y="192" fill="#075985" font-size="11" font-weight="bold">A</text>
+              <circle cx="430" cy="188" r="14" fill="#e0f2fe" stroke="#0284c7" stroke-width="2.5" />
+              <circle cx="468" cy="188" r="13" fill="#fff" stroke="#0284c7" stroke-width="2.5" />
+              <circle cx="506" cy="188" r="13" fill="#fff" stroke="#0284c7" stroke-width="2.5" />
+              <circle cx="542" cy="188" r="13" fill="#fff" stroke="#0284c7" stroke-width="2.5" />
+              <!-- 發球拋物線 下 -->
+              <path d="M 416 180 Q 300 118 186 176" stroke="#0f172a" stroke-width="2" fill="none" />
+              <polygon points="189,171 181,179 192,179" fill="#0f172a" />
+            </g>
+          </svg>
         </div>
       </div>
-      <div class="pt-2 border-t border-slate-100">
-        <div class="flex items-center justify-between mb-1.5">
-          <span class="text-xs font-black text-slate-700">📋 教師端 Google Apps Script 程式碼（含逐球細項 36 / 68 欄）</span>
-          <button type="button" onclick="copyGasCode()" class="touch-btn min-h-0 py-1.5 px-3 bg-brand-teal hover:bg-teal-700 text-white text-xs font-bold rounded-lg">
-            <i class="fa-regular fa-copy mr-1"></i>一鍵複製
+
+      <!-- 三步驟操作與計分規則 -->
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 space-y-3">
+        <h2 class="font-black text-base text-slate-800 flex items-center gap-2">
+          <span class="w-1.5 h-5 bg-amber-500 rounded-full"></span>
+          活動執行與計分規則
+        </h2>
+        <div class="grid sm:grid-cols-3 gap-2.5 text-xs sm:text-sm">
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <div class="font-black text-slate-900 mb-1">1️⃣ 預試分級（各 3 球）</div>
+            <p class="text-slate-600 leading-relaxed">先進行 A 發 B 接 3 球、互換後 B 發 A 接 3 球，依總分系統自動推薦正式發球線（3m / 6m / 9m）。</p>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <div class="font-black text-slate-900 mb-1">2️⃣ 正式測驗（各 5 球）</div>
+            <p class="text-slate-600 leading-relaxed">發球過網 +1、發入三米線後落區 +1（含距離加分 10/15/20）；接發接到 +1、傳入前排舉球區 +1。</p>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <div class="font-black text-slate-900 mb-1">3️⃣ 同儕觀察與回饋</div>
+            <p class="text-slate-600 leading-relaxed">C 組觀察員同步勾選 4 大動作要點（Key Points），完成後給予口語建議並送出雲端紀錄。</p>
+          </div>
+        </div>
+
+        <!-- 接發球 4 大 Key Points -->
+        <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-3 space-y-1.5">
+          <div class="text-xs font-black text-amber-900">📌 接發球 4 大動作檢核要點（Key Points）：</div>
+          <ol class="text-xs text-amber-950 space-y-1 list-decimal list-inside">
+            <li>身體屈膝微蹲，手臂屈肘放鬆面對前方。</li>
+            <li>移動至接球位置後，根據來球高度選擇做出高手或低手傳球動作。</li>
+            <li>傳球時身體重心放低並能朝向傳球目標。</li>
+            <li>根據傳球目標，能夠穩定地控制傳球高度及距離。</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- 底部快速前往按鈕 -->
+      <div class="grid grid-cols-2 gap-2.5 pt-1">
+        <button onclick="switchTab('pretest')" class="bg-sky-600 hover:bg-sky-500 text-white font-black py-3.5 px-4 rounded-2xl shadow-md text-sm flex items-center justify-center gap-1.5 transition">
+          <span>⏱️ 前往預試檢測 (3組)</span>
+        </button>
+        <button onclick="switchTab('formal')" class="bg-slate-900 hover:bg-slate-800 text-amber-400 font-black py-3.5 px-4 rounded-2xl shadow-md text-sm flex items-center justify-center gap-1.5 transition">
+          <span>📋 直接正式測驗 (5組)</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ==================== 分頁 ②：預試檢測 (3組) ==================== -->
+    <section id="view-pretest" class="hidden space-y-4">
+      <!-- 基本資料卡片 -->
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="font-black text-base text-slate-800">⏱️ 預試檢測基本資料（各 3 球熱身分級）</h2>
+          <button onclick="resetPretestForm()" class="text-xs text-slate-400 hover:text-rose-500 font-bold">清空重填</button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">班級</label>
+            <input id="pre-class" type="text" placeholder="例：大一體育A" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-sky-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">組別（第 1～20 組）</label>
+            <select id="pre-group" class="group-select w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm font-bold focus:outline-none focus:border-sky-500"></select>
+          </div>
+        </div>
+
+        <!-- 同學 A & B 資料 -->
+        <div class="grid sm:grid-cols-2 gap-2.5 pt-1">
+          <div class="bg-sky-50/70 border border-sky-200 rounded-xl p-3 space-y-2">
+            <div class="text-xs font-black text-sky-900">👤 同學 A（階段一先發球）</div>
+            <div class="grid grid-cols-3 gap-1.5">
+              <input id="pre-a-name" type="text" placeholder="姓名" class="col-span-1 bg-white border border-sky-200 rounded-lg px-2.5 py-1.5 text-sm" />
+              <input id="pre-a-id" type="text" placeholder="學號" class="col-span-1 bg-white border border-sky-200 rounded-lg px-2.5 py-1.5 text-sm" />
+              <select id="pre-a-gender" class="col-span-1 bg-white border border-sky-200 rounded-lg px-2 py-1.5 text-sm font-bold">
+                <option value="男">男</option>
+                <option value="女">女</option>
+              </select>
+            </div>
+          </div>
+          <div class="bg-emerald-50/70 border border-emerald-200 rounded-xl p-3 space-y-2">
+            <div class="text-xs font-black text-emerald-900">👤 同學 B（階段一先接發）</div>
+            <div class="grid grid-cols-3 gap-1.5">
+              <input id="pre-b-name" type="text" placeholder="姓名" class="col-span-1 bg-white border border-emerald-200 rounded-lg px-2.5 py-1.5 text-sm" />
+              <input id="pre-b-id" type="text" placeholder="學號" class="col-span-1 bg-white border border-emerald-200 rounded-lg px-2.5 py-1.5 text-sm" />
+              <select id="pre-b-gender" class="col-span-1 bg-white border border-emerald-200 rounded-lg px-2 py-1.5 text-sm font-bold">
+                <option value="男">男</option>
+                <option value="女">女</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 預試階段一：A 發球 × B 接發 (3球) -->
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+          <div>
+            <span class="text-xs font-black px-2 py-0.5 rounded bg-sky-100 text-sky-800">階段一（第 1～3 球）</span>
+            <h3 class="font-black text-sm sm:text-base text-slate-800 mt-1">同學 A 發球 ➔ 同學 B 接發球</h3>
+          </div>
+          <div class="text-right text-xs font-bold text-slate-500">
+            <div>A發：<span id="pre-s1-a-score" class="text-sky-600 font-black text-sm">0</span>/6</div>
+            <div>B接：<span id="pre-s1-b-score" class="text-emerald-600 font-black text-sm">0</span>/6</div>
+          </div>
+        </div>
+        <div id="pre-stage1-container" class="space-y-2.5"></div>
+      </div>
+
+      <!-- 現場角色互換提示橫幅 -->
+      <div class="bg-amber-400 text-slate-900 rounded-2xl p-3 shadow-sm flex items-center justify-center gap-2 font-black text-sm">
+        <span>🔄</span>
+        <span>現場交換站位！接下來換「同學 B 發球 ➔ 同學 A 接發球」</span>
+      </div>
+
+      <!-- 預試階段二：B 發球 × A 接發 (3球) -->
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+          <div>
+            <span class="text-xs font-black px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">階段二（第 1～3 球）</span>
+            <h3 class="font-black text-sm sm:text-base text-slate-800 mt-1">同學 B 發球 ➔ 同學 A 接發球</h3>
+          </div>
+          <div class="text-right text-xs font-bold text-slate-500">
+            <div>B發：<span id="pre-s2-b-score" class="text-sky-600 font-black text-sm">0</span>/6</div>
+            <div>A接：<span id="pre-s2-a-score" class="text-emerald-600 font-black text-sm">0</span>/6</div>
+          </div>
+        </div>
+        <div id="pre-stage2-container" class="space-y-2.5"></div>
+      </div>
+
+      <!-- 預試結算與推薦發球線 -->
+      <div class="bg-slate-900 text-white rounded-2xl p-4 shadow-lg space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="font-black text-base text-amber-400">📊 預試總分結算與正式測驗級距推薦</h3>
+          <span class="text-xs text-slate-400">個人滿分 12 分</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-slate-800 rounded-xl p-3 border border-slate-700">
+            <div class="text-xs text-slate-400 font-bold">同學 A 總分（發+接）</div>
+            <div class="text-2xl font-black text-white my-1"><span id="pre-total-a">0</span> <span class="text-xs font-normal text-slate-400">/ 12分</span></div>
+            <div class="text-xs font-bold text-amber-300">推薦正式線：<span id="pre-rec-a">3m (+10)</span></div>
+          </div>
+          <div class="bg-slate-800 rounded-xl p-3 border border-slate-700">
+            <div class="text-xs text-slate-400 font-bold">同學 B 總分（發+接）</div>
+            <div class="text-2xl font-black text-white my-1"><span id="pre-total-b">0</span> <span class="text-xs font-normal text-slate-400">/ 12分</span></div>
+            <div class="text-xs font-bold text-amber-300">推薦正式線：<span id="pre-rec-b">3m (+10)</span></div>
+          </div>
+        </div>
+
+        <div class="space-y-2 pt-1">
+          <button onclick="submitPretest()" class="w-full bg-amber-400 hover:bg-amber-300 text-slate-900 font-black py-3.5 rounded-xl shadow text-sm sm:text-base transition">
+            ☁️ 送出預試檢測紀錄（含 6 球歷程）
+          </button>
+          <button onclick="applyPretestToFormal()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl shadow text-xs sm:text-sm transition">
+            🚀 帶入姓名學號並前往正式測驗（自動套用推薦距離）
           </button>
         </div>
-        <pre id="gas-code-block" class="bg-slate-900 text-emerald-300 text-[11px] p-3 rounded-xl overflow-x-auto font-mono leading-relaxed max-h-48"></pre>
       </div>
     </section>
 
-    <!-- 本機備份與 CSV 匯出抽屜 -->
-    <section id="backup-drawer" class="hidden bg-white rounded-3xl shadow-md border-2 border-slate-300 p-4 space-y-3">
-      <div class="flex items-center justify-between">
-        <h2 class="text-sm font-black text-brand-navy flex items-center gap-2">
-          <i class="fa-solid fa-database text-brand-amber"></i>本機瀏覽器備份與 CSV 匯出
-        </h2>
-        <button type="button" onclick="toggleDrawer('backup-drawer')" class="text-slate-400 hover:text-slate-700 px-2 py-1"><i class="fa-solid fa-xmark"></i></button>
+    <!-- ==================== 分頁 ③：正式測驗 (5組) ==================== -->
+    <section id="view-formal" class="hidden space-y-4">
+      <!-- 正式基本資料卡片 -->
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="font-black text-base text-slate-800">📋 正式測驗基本資料（各 5 球差異化評量）</h2>
+          <button onclick="resetFormalForm()" class="text-xs text-slate-400 hover:text-rose-500 font-bold">清空重填</button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">班級</label>
+            <input id="frm-class" type="text" placeholder="例：大一體育A" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">組別（第 1～20 組）</label>
+            <select id="frm-group" class="group-select w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm font-bold focus:outline-none focus:border-amber-500"></select>
+          </div>
+        </div>
+
+        <!-- 同學 A & B 基本資料 + 差異化發球位置選擇 -->
+        <div class="grid sm:grid-cols-2 gap-2.5 pt-1">
+          <div class="bg-sky-50/70 border border-sky-200 rounded-xl p-3 space-y-2">
+            <div class="text-xs font-black text-sky-900">👤 同學 A（階段一先發球）</div>
+            <div class="grid grid-cols-3 gap-1.5">
+              <input id="frm-a-name" type="text" placeholder="姓名" class="bg-white border border-sky-200 rounded-lg px-2.5 py-1.5 text-sm" />
+              <input id="frm-a-id" type="text" placeholder="學號" class="bg-white border border-sky-200 rounded-lg px-2.5 py-1.5 text-sm" />
+              <select id="frm-a-gender" class="bg-white border border-sky-200 rounded-lg px-2 py-1.5 text-sm font-bold">
+                <option value="男">男</option>
+                <option value="女">女</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-sky-800 mb-1">A 選擇發球位置（基礎加分）：</label>
+              <select id="frm-a-dist" onchange="recalcFormal()" class="w-full bg-white border border-sky-300 rounded-lg px-2.5 py-1.5 text-xs font-black text-sky-950">
+                <option value="10" data-label="3m">3m 發球線（+10 分）</option>
+                <option value="15" data-label="6m">6m 發球線（+15 分）</option>
+                <option value="20" data-label="9m">9m 底線發球（+20 分）</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="bg-emerald-50/70 border border-emerald-200 rounded-xl p-3 space-y-2">
+            <div class="text-xs font-black text-emerald-900">👤 同學 B（階段一先接發）</div>
+            <div class="grid grid-cols-3 gap-1.5">
+              <input id="frm-b-name" type="text" placeholder="姓名" class="bg-white border border-emerald-200 rounded-lg px-2.5 py-1.5 text-sm" />
+              <input id="frm-b-id" type="text" placeholder="學號" class="bg-white border border-emerald-200 rounded-lg px-2.5 py-1.5 text-sm" />
+              <select id="frm-b-gender" class="bg-white border border-emerald-200 rounded-lg px-2 py-1.5 text-sm font-bold">
+                <option value="男">男</option>
+                <option value="女">女</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-emerald-800 mb-1">B 選擇發球位置（基礎加分）：</label>
+              <select id="frm-b-dist" onchange="recalcFormal()" class="w-full bg-white border border-emerald-300 rounded-lg px-2.5 py-1.5 text-xs font-black text-emerald-950">
+                <option value="10" data-label="3m">3m 發球線（+10 分）</option>
+                <option value="15" data-label="6m">6m 發球線（+15 分）</option>
+                <option value="20" data-label="9m">9m 底線發球（+20 分）</option>
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="flex gap-2">
-        <button type="button" onclick="exportAllCSV()" class="touch-btn min-h-0 flex-1 py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl">
-          <i class="fa-solid fa-file-csv mr-1"></i>匯出全部 CSV（含逐球明細）
+
+      <!-- 正式階段一：A 發球 × B 接發 (5球) -->
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+          <div>
+            <span class="text-xs font-black px-2 py-0.5 rounded bg-sky-100 text-sky-800">階段一（第 1～5 球）</span>
+            <h3 class="font-black text-sm sm:text-base text-slate-800 mt-1">同學 A 發球 ➔ 同學 B 接發球</h3>
+          </div>
+          <div class="text-right text-xs font-bold text-slate-500">
+            <div>A發表現：<span id="frm-s1-a-score" class="text-sky-600 font-black text-sm">0</span>/10</div>
+            <div>B接表現：<span id="frm-s1-b-score" class="text-emerald-600 font-black text-sm">0</span>/10</div>
+          </div>
+        </div>
+        <div id="frm-stage1-container" class="space-y-2.5"></div>
+      </div>
+
+      <!-- 現場角色互換提示橫幅 -->
+      <div class="bg-amber-400 text-slate-900 rounded-2xl p-3 shadow-sm flex items-center justify-center gap-2 font-black text-sm">
+        <span>🔄</span>
+        <span>現場交換站位！接下來換「同學 B 發球 ➔ 同學 A 接發球」</span>
+      </div>
+
+      <!-- 正式階段二：B 發球 × A 接發 (5球) -->
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+          <div>
+            <span class="text-xs font-black px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">階段二（第 1～5 球）</span>
+            <h3 class="font-black text-sm sm:text-base text-slate-800 mt-1">同學 B 發球 ➔ 同學 A 接發球</h3>
+          </div>
+          <div class="text-right text-xs font-bold text-slate-500">
+            <div>B發表現：<span id="frm-s2-b-score" class="text-sky-600 font-black text-sm">0</span>/10</div>
+            <div>A接表現：<span id="frm-s2-a-score" class="text-emerald-600 font-black text-sm">0</span>/10</div>
+          </div>
+        </div>
+        <div id="frm-stage2-container" class="space-y-2.5"></div>
+      </div>
+
+      <!-- 質性評量：同儕回饋與自我評量 -->
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 space-y-3">
+        <h3 class="font-black text-base text-slate-800">💬 同儕觀察回饋與自我評量</h3>
+        
+        <div class="grid sm:grid-cols-2 gap-3 text-xs">
+          <!-- 同學 A 質性評量 -->
+          <div class="bg-sky-50/60 border border-sky-200 rounded-xl p-3 space-y-2">
+            <div class="font-black text-sky-900 text-sm">針對「同學 A」的回饋與自評</div>
+            <label class="flex items-center gap-2 font-bold text-slate-700 cursor-pointer">
+              <input id="frm-a-smooth" type="checkbox" class="w-4 h-4 rounded text-sky-600" />
+              <span>同儕觀察：動作流暢</span>
+            </label>
+            <label class="flex items-center gap-2 font-bold text-slate-700 cursor-pointer">
+              <input id="frm-a-better" type="checkbox" class="w-4 h-4 rounded text-sky-600" />
+              <span>自我評量：比之前的表現更好</span>
+            </label>
+            <div>
+              <div class="font-bold text-slate-600 mb-1">尚未做到的 Key Point（可複選）：</div>
+              <div class="grid grid-cols-2 gap-1.5">
+                <label class="flex items-center gap-1.5 bg-white px-2 py-1 rounded border border-slate-200"><input type="checkbox" name="frm-a-kp" value="KP1屈膝放鬆" /><span>1.屈膝放鬆</span></label>
+                <label class="flex items-center gap-1.5 bg-white px-2 py-1 rounded border border-slate-200"><input type="checkbox" name="frm-a-kp" value="KP2高低手選擇" /><span>2.高低手選擇</span></label>
+                <label class="flex items-center gap-1.5 bg-white px-2 py-1 rounded border border-slate-200"><input type="checkbox" name="frm-a-kp" value="KP3重心朝目標" /><span>3.重心朝目標</span></label>
+                <label class="flex items-center gap-1.5 bg-white px-2 py-1 rounded border border-slate-200"><input type="checkbox" name="frm-a-kp" value="KP4控制高度距離" /><span>4.控制高度距離</span></label>
+              </div>
+            </div>
+            <input id="frm-a-note" type="text" placeholder="觀察者給 A 的一句話建議（選填）" class="w-full bg-white border border-sky-200 rounded-lg px-2.5 py-1.5 text-xs" />
+          </div>
+
+          <!-- 同學 B 質性評量 -->
+          <div class="bg-emerald-50/60 border border-emerald-200 rounded-xl p-3 space-y-2">
+            <div class="font-black text-emerald-900 text-sm">針對「同學 B」的回饋與自評</div>
+            <label class="flex items-center gap-2 font-bold text-slate-700 cursor-pointer">
+              <input id="frm-b-smooth" type="checkbox" class="w-4 h-4 rounded text-emerald-600" />
+              <span>同儕觀察：動作流暢</span>
+            </label>
+            <label class="flex items-center gap-2 font-bold text-slate-700 cursor-pointer">
+              <input id="frm-b-better" type="checkbox" class="w-4 h-4 rounded text-emerald-600" />
+              <span>自我評量：比之前的表現更好</span>
+            </label>
+            <div>
+              <div class="font-bold text-slate-600 mb-1">尚未做到的 Key Point（可複選）：</div>
+              <div class="grid grid-cols-2 gap-1.5">
+                <label class="flex items-center gap-1.5 bg-white px-2 py-1 rounded border border-slate-200"><input type="checkbox" name="frm-b-kp" value="KP1屈膝放鬆" /><span>1.屈膝放鬆</span></label>
+                <label class="flex items-center gap-1.5 bg-white px-2 py-1 rounded border border-slate-200"><input type="checkbox" name="frm-b-kp" value="KP2高低手選擇" /><span>2.高低手選擇</span></label>
+                <label class="flex items-center gap-1.5 bg-white px-2 py-1 rounded border border-slate-200"><input type="checkbox" name="frm-b-kp" value="KP3重心朝目標" /><span>3.重心朝目標</span></label>
+                <label class="flex items-center gap-1.5 bg-white px-2 py-1 rounded border border-slate-200"><input type="checkbox" name="frm-b-kp" value="KP4控制高度距離" /><span>4.控制高度距離</span></label>
+              </div>
+            </div>
+            <input id="frm-b-note" type="text" placeholder="觀察者給 B 的一句話建議（選填）" class="w-full bg-white border border-emerald-200 rounded-lg px-2.5 py-1.5 text-xs" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 正式總分結算與送出 -->
+      <div class="bg-slate-900 text-white rounded-2xl p-4 shadow-lg space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="font-black text-base text-amber-400">🏆 正式測驗總分結算</h3>
+          <div class="text-xs font-bold bg-amber-400/20 text-amber-300 px-2.5 py-1 rounded-full border border-amber-400/30">
+            雙人合作總分：<span id="frm-pair-total" class="text-base font-black">20</span> 分
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-slate-800 rounded-xl p-3 border border-slate-700">
+            <div class="text-xs text-slate-400 font-bold">同學 A 個人總分</div>
+            <div class="text-2xl font-black text-white my-1"><span id="frm-total-a">10</span> <span class="text-xs font-normal text-slate-400">分</span></div>
+            <div class="text-[11px] text-slate-300" id="frm-detail-a">發0 + 距離10 + 接0</div>
+          </div>
+          <div class="bg-slate-800 rounded-xl p-3 border border-slate-700">
+            <div class="text-xs text-slate-400 font-bold">同學 B 個人總分</div>
+            <div class="text-2xl font-black text-white my-1"><span id="frm-total-b">10</span> <span class="text-xs font-normal text-slate-400">分</span></div>
+            <div class="text-[11px] text-slate-300" id="frm-detail-b">發0 + 距離10 + 接0</div>
+          </div>
+        </div>
+
+        <button onclick="submitFormal()" class="w-full bg-amber-400 hover:bg-amber-300 text-slate-900 font-black py-4 rounded-xl shadow-lg text-base transition">
+          ☁️ 送出正式測驗紀錄（含 10 球逐球歷程）
         </button>
-        <button type="button" onclick="clearAllBackups()" class="touch-btn min-h-0 py-2.5 px-3 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs rounded-xl">
-          清除本機紀錄
-        </button>
-      </div>
-      <div id="backup-list-container" class="space-y-2 max-h-64 overflow-y-auto"></div>
-    </section>
-  </div>
-
-  <!-- ======================================================================= -->
-  <!-- 分頁一：① 操作方式 (Guide)                                              -->
-  <!-- ======================================================================= -->
-  <main id="view-guide" class="max-w-2xl mx-auto px-4 pt-3 space-y-4">
-    <section class="bg-gradient-to-br from-brand-navy to-slate-800 text-white rounded-3xl p-5 shadow-md border border-slate-700">
-      <div class="inline-flex items-center gap-1.5 bg-brand-amber/20 border border-brand-amber/40 text-brand-amber text-xs font-black px-3 py-1 rounded-full mb-2">
-        <i class="fa-solid fa-bullseye"></i><span>接發球／救球（發展期）- 4 • 活動目標</span>
-      </div>
-      <p class="text-sm sm:text-base text-slate-100 leading-relaxed font-medium">
-        能在發球—接發球循環練習中根據同儕的觀察紀錄與回饋修正自己的動作（判斷軌跡、迅速移動腳步及接發球之角度與力量控制），以將來球穩定地傳到有利舉球的位置。
-      </p>
-    </section>
-
-    <!-- 互動式 SVG 半場站位圖解 -->
-    <section class="bg-white rounded-3xl shadow-sm border border-slate-200/90 p-4 sm:p-5">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="text-base sm:text-lg font-black text-brand-navy flex items-center gap-2">
-          <span class="w-2 h-5 bg-brand-teal rounded-full"></span>半場三組站位與輪替圖解
-        </h2>
-        <span class="text-xs font-bold text-slate-400">點選角色看任務</span>
-      </div>
-
-      <div class="grid grid-cols-4 gap-1.5 bg-slate-100 p-1.5 rounded-2xl mb-3">
-        <button type="button" onclick="selectSvgRole('all')" id="svg-role-btn-all" class="touch-btn min-h-0 py-2 px-1 rounded-xl text-xs font-black bg-brand-navy text-white shadow-sm">全部視角</button>
-        <button type="button" onclick="selectSvgRole('A')" id="svg-role-btn-A" class="touch-btn min-h-0 py-2 px-1 rounded-xl text-xs font-bold text-slate-600 hover:bg-white/70">A組 發球</button>
-        <button type="button" onclick="selectSvgRole('B')" id="svg-role-btn-B" class="touch-btn min-h-0 py-2 px-1 rounded-xl text-xs font-bold text-slate-600 hover:bg-white/70">B組 接發</button>
-        <button type="button" onclick="selectSvgRole('C')" id="svg-role-btn-C" class="touch-btn min-h-0 py-2 px-1 rounded-xl text-xs font-bold text-slate-600 hover:bg-white/70">C組 觀察</button>
-      </div>
-
-      <div class="bg-teal-50/70 border border-teal-200 rounded-2xl px-3.5 py-2.5 mb-3 text-xs sm:text-sm text-slate-700 flex items-center gap-2.5">
-        <i class="fa-solid fa-people-arrows text-brand-teal text-base shrink-0"></i>
-        <span id="svg-role-desc">每半場分 <strong>A、B、C 三組</strong>輪替：A 發球、B 接球進目標區、C 場邊同步觀察並記錄每一球過程與分數。</span>
-      </div>
-
-      <div class="w-full bg-emerald-50/50 rounded-2xl border border-slate-200 p-2 overflow-hidden">
-        <svg viewBox="0 0 620 320" class="w-full h-auto block" role="img" aria-label="排球半場站位圖">
-          <defs>
-            <marker id="arrow-dark" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M 0 1 L 10 5 L 0 9 z" fill="#0F172A" />
-            </marker>
-            <marker id="arrow-teal" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-              <path d="M 0 1 L 10 5 L 0 9 z" fill="#0D9488" />
-            </marker>
-          </defs>
-          <text x="20" y="165" font-size="15" font-weight="900" fill="#475569" text-anchor="middle">接</text>
-          <text x="600" y="165" font-size="15" font-weight="900" fill="#475569" text-anchor="middle">發</text>
-          <!-- 左側半場 (接球) & 右側半場 (發球) -->
-          <rect x="115" y="50" width="235" height="220" rx="6" fill="#BEF264" fill-opacity="0.55" stroke="#84CC16" stroke-width="2" />
-          <rect x="364" y="50" width="135" height="220" rx="6" fill="#BEF264" fill-opacity="0.55" stroke="#84CC16" stroke-width="2" />
-          <!-- 球網與中線 -->
-          <line x1="357" y1="40" x2="357" y2="280" stroke="#0F172A" stroke-width="4" stroke-linecap="round" />
-          <rect x="342" y="28" width="30" height="16" rx="4" fill="#0F172A" />
-          <text x="357" y="39" font-size="10" font-weight="700" fill="#FFFFFF" text-anchor="middle">球網</text>
-          <line x1="115" y1="160" x2="499" y2="160" stroke="#15803D" stroke-width="2" stroke-dasharray="8 6" />
-          <!-- 目標落地區 (舉球位) -->
-          <g id="svg-target-zones" class="svg-role-group">
-            <rect x="262" y="54" width="66" height="102" fill="none" stroke="#0284C7" stroke-width="2.5" stroke-dasharray="6 4" rx="4" />
-            <rect x="280" y="68" width="30" height="74" rx="4" fill="#0D9488" />
-            <rect x="262" y="164" width="66" height="102" fill="none" stroke="#0D9488" stroke-width="2.5" stroke-dasharray="6 4" rx="4" />
-            <rect x="280" y="178" width="30" height="74" rx="4" fill="#0284C7" />
-            <rect x="228" y="278" width="134" height="24" rx="12" fill="#0F172A" />
-            <text x="295" y="294" font-size="11" font-weight="700" fill="#F59E0B" text-anchor="middle">目標落地區（舉球位）</text>
-          </g>
-          <!-- B組 接發球 -->
-          <g id="svg-group-B" class="svg-role-group">
-            <circle cx="62" cy="105" r="14" fill="#FFFFFF" stroke="#0D9488" stroke-width="2.5" />
-            <circle cx="98" cy="105" r="14" fill="#FFFFFF" stroke="#0D9488" stroke-width="2.5" />
-            <line x1="115" y1="105" x2="148" y2="105" stroke="#0F172A" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrow-dark)" />
-            <circle cx="170" cy="105" r="16" fill="#CCFBF1" stroke="#0D9488" stroke-width="3" />
-            <text x="148" y="130" font-size="13" font-weight="900" fill="#0F766E">B</text>
-            <path d="M 190 105 L 272 105" fill="none" stroke="#0D9488" stroke-width="2" stroke-dasharray="3 3" marker-end="url(#arrow-teal)" />
-
-            <circle cx="62" cy="215" r="14" fill="#FFFFFF" stroke="#0284C7" stroke-width="2.5" />
-            <circle cx="98" cy="215" r="14" fill="#FFFFFF" stroke="#0284C7" stroke-width="2.5" />
-            <line x1="115" y1="215" x2="148" y2="215" stroke="#0F172A" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrow-dark)" />
-            <circle cx="170" cy="215" r="16" fill="#E0F2FE" stroke="#0284C7" stroke-width="3" />
-            <text x="148" y="200" font-size="13" font-weight="900" fill="#0369A1">B</text>
-            <path d="M 190 215 L 272 215" fill="none" stroke="#0284C7" stroke-width="2" stroke-dasharray="3 3" marker-end="url(#arrow-teal)" />
-          </g>
-          <!-- A組 發球 -->
-          <g id="svg-group-A" class="svg-role-group">
-            <text x="392" y="110" font-size="13" font-weight="900" fill="#0F766E">A</text>
-            <circle cx="458" cy="105" r="15" fill="#CCFBF1" stroke="#0D9488" stroke-width="2.5" />
-            <circle cx="496" cy="105" r="14" fill="#FFFFFF" stroke="#0D9488" stroke-width="2.5" />
-            <path d="M 438 98 Q 310 18 192 95" fill="none" stroke="#0F172A" stroke-width="2.5" class="animate-flight" marker-end="url(#arrow-dark)" />
-
-            <text x="392" y="220" font-size="13" font-weight="900" fill="#0369A1">A</text>
-            <circle cx="458" cy="215" r="15" fill="#E0F2FE" stroke="#0284C7" stroke-width="2.5" />
-            <circle cx="496" cy="215" r="14" fill="#FFFFFF" stroke="#0284C7" stroke-width="2.5" />
-            <path d="M 438 208 Q 310 128 192 205" fill="none" stroke="#0F172A" stroke-width="2.5" class="animate-flight" marker-end="url(#arrow-dark)" />
-          </g>
-          <!-- C組 觀察與記錄 -->
-          <g id="svg-group-C" class="svg-role-group">
-            <g transform="translate(145, 24)">
-              <circle cx="0" cy="0" r="16" fill="#F59E0B" />
-              <circle cx="-5" cy="-3" r="2" fill="#FFF" /><circle cx="5" cy="-3" r="2" fill="#FFF" />
-              <path d="M -5 4 Q 0 10 5 4" fill="none" stroke="#FFF" stroke-width="2.2" stroke-linecap="round" />
-              <rect x="22" y="-11" width="102" height="22" rx="11" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1.5" />
-              <text x="73" y="4" font-size="11" font-weight="800" fill="#B45309" text-anchor="middle">C組 觀察與記錄</text>
-            </g>
-            <g transform="translate(145, 294)">
-              <circle cx="0" cy="0" r="16" fill="#F59E0B" />
-              <circle cx="-5" cy="-3" r="2" fill="#FFF" /><circle cx="5" cy="-3" r="2" fill="#FFF" />
-              <path d="M -5 4 Q 0 10 5 4" fill="none" stroke="#FFF" stroke-width="2.2" stroke-linecap="round" />
-              <text x="24" y="4" font-size="13" font-weight="900" fill="#B45309">C</text>
-            </g>
-          </g>
-        </svg>
       </div>
     </section>
 
-    <!-- 三步驟活動流程 -->
-    <section class="space-y-2.5">
-      <h2 class="text-base sm:text-lg font-black text-brand-navy flex items-center gap-2 px-1">
-        <span class="w-2 h-5 bg-brand-amber rounded-full"></span>三步驟執行流程
-      </h2>
-      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/90 flex gap-3 items-start">
-        <span class="w-7 h-7 rounded-xl bg-brand-navy text-white font-num font-black text-xs flex items-center justify-center shrink-0">1</span>
-        <div class="text-xs sm:text-sm text-slate-600"><strong class="text-brand-navy block text-sm mb-0.5">預試檢測（各測 3 組）定位級距</strong>兩人先各測 3 球發球與接發球，系統依總分自動推薦正式發球線（<strong>3m +10 / 6m +15 / 9m +20</strong>）。</div>
-      </div>
-      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/90 flex gap-3 items-start">
-        <span class="w-7 h-7 rounded-xl bg-brand-teal text-white font-num font-black text-xs flex items-center justify-center shrink-0">2</span>
-        <div class="text-xs sm:text-sm text-slate-600"><strong class="text-brand-navy block text-sm mb-0.5">正式測驗（兩階段角色互換，各 5 組）</strong>階段一（A發×B接 5球）➔ 現場角色互換 ➔ 階段二（B發×A接 5球）。發球過網+1、落區+1；接發接到+1、落舉球區+1。</div>
-      </div>
-      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/90 flex gap-3 items-start">
-        <span class="w-7 h-7 rounded-xl bg-brand-amber text-brand-navy font-num font-black text-xs flex items-center justify-center shrink-0">3</span>
-        <div class="text-xs sm:text-sm text-slate-600"><strong class="text-brand-navy block text-sm mb-0.5">質性回饋與逐球歷程同步雲端</strong>C 組勾選動作要點回饋、受測者完成自評後送出，系統自動將每一球細部過程寫入 Google Sheet。</div>
-      </div>
-    </section>
-
-    <!-- 接發球 4 大動作要點 -->
-    <section class="bg-white rounded-3xl p-4 sm:p-5 shadow-sm border border-slate-200/90">
-      <h2 class="text-base font-black text-brand-navy flex items-center gap-2 mb-3">
-        <i class="fa-solid fa-star text-brand-amber"></i>接發球 4 大動作要點（Key Points）
-      </h2>
-      <div id="guide-keypoints-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
-    </section>
-
-    <!-- 3 種進階變化玩法 -->
-    <section class="bg-white rounded-3xl p-4 sm:p-5 shadow-sm border border-slate-200/90">
-      <h2 class="text-base font-black text-brand-navy flex items-center gap-2 mb-3">
-        <i class="fa-solid fa-fire text-rose-500"></i>進階修改活動方式
-      </h2>
-      <div class="grid grid-cols-3 gap-1.5 bg-slate-100 p-1.5 rounded-2xl mb-3">
-        <button type="button" onclick="selectGameMode(1)" id="game-mode-btn-1" class="touch-btn min-h-0 py-2 px-1 rounded-xl text-xs font-black bg-brand-navy text-white shadow-sm">1. 輪轉積分賽</button>
-        <button type="button" onclick="selectGameMode(2)" id="game-mode-btn-2" class="touch-btn min-h-0 py-2 px-1 rounded-xl text-xs font-bold text-slate-600">2. 雙人站位策略</button>
-        <button type="button" onclick="selectGameMode(3)" id="game-mode-btn-3" class="touch-btn min-h-0 py-2 px-1 rounded-xl text-xs font-bold text-slate-600">3. 接球轉舉球</button>
-      </div>
-      <div id="game-mode-box" class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 text-xs sm:text-sm text-slate-700 leading-relaxed"></div>
-    </section>
-
-    <!-- 底部雙快捷按鈕 -->
-    <div class="pt-1 space-y-2.5">
-      <button type="button" onclick="switchTab('pretest')"
-        class="touch-btn w-full bg-brand-navy hover:bg-slate-800 text-white font-black text-base py-4 px-6 rounded-2xl shadow-lg flex items-center justify-center gap-2.5 border-b-4 border-brand-amber">
-        <span>前往預試檢測 (3組)</span><i class="fa-solid fa-arrow-right text-brand-amber"></i>
-      </button>
-      <button type="button" onclick="switchTab('formal')"
-        class="touch-btn w-full bg-white hover:bg-slate-50 text-brand-navy border-2 border-slate-300 font-black text-sm py-3.5 px-6 rounded-2xl shadow-sm flex items-center justify-center gap-2">
-        <span>直接前往正式測驗 (5組)</span><i class="fa-solid fa-clipboard-check text-brand-teal"></i>
-      </button>
-    </div>
   </main>
 
-  <!-- ======================================================================= -->
-  <!-- 分頁二：② 預試檢測 (3組) (Pre-test)                                     -->
-  <!-- ======================================================================= -->
-  <section id="view-pretest" class="hidden max-w-2xl mx-auto px-4 pt-3 space-y-4">
-    <!-- 預試基本資料卡 -->
-    <div class="bg-white rounded-3xl shadow-sm border border-slate-200/90 p-4 sm:p-5 space-y-3.5">
-      <div class="flex items-center justify-between">
-        <h2 class="text-base font-black text-brand-navy flex items-center gap-2">
-          <span class="w-6 h-6 rounded-lg bg-brand-navy text-white font-num text-xs flex items-center justify-center">1</span>預試基本資料（各測 3 組）
-        </h2>
-        <button type="button" onclick="resetSectionScores('pretest', this)"
-          class="touch-btn min-h-0 py-1.5 px-2.5 text-xs font-bold text-slate-500 hover:text-rose-600 bg-slate-100 rounded-xl">
-          <i class="fa-solid fa-rotate-left mr-1"></i>清空預試
-        </button>
+  <!-- ==================== 彈窗：本機備份紀錄與 CSV 匯出 ==================== -->
+  <div id="backupModal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-3">
+    <div class="bg-white rounded-2xl max-w-lg w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="bg-slate-900 text-white px-4 py-3 flex items-center justify-between">
+        <h3 class="font-black text-sm">🕒 本機備份紀錄（斷網自動保存）</h3>
+        <button onclick="closeBackupModal()" class="text-slate-400 hover:text-white font-bold px-2">✕</button>
       </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-        <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1">班級</label>
-          <input type="text" id="pre-className" placeholder="例：大一體育甲" oninput="saveDraft()"
-            class="w-full bg-slate-50 border border-slate-300 focus:border-brand-navy focus:bg-white rounded-xl px-3 py-2 text-sm font-bold outline-none" />
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1">組別（共 20 組）</label>
-          <select id="pre-groupName" onchange="saveDraft()"
-            class="group-select-20 w-full bg-slate-50 border border-slate-300 focus:border-brand-navy focus:bg-white rounded-xl px-3 py-2 text-sm font-bold outline-none"></select>
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1">觀察員 C 姓名</label>
-          <input type="text" id="pre-observerName" placeholder="場邊記錄同學" oninput="saveDraft()"
-            class="w-full bg-slate-50 border border-slate-300 focus:border-brand-navy focus:bg-white rounded-xl px-3 py-2 text-sm font-bold outline-none" />
+      <div class="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-2">
+        <span class="text-xs text-slate-600 font-medium">所有紀錄皆同步保存於手機瀏覽器中</span>
+        <div class="flex gap-1.5">
+          <button onclick="exportBackupCSV()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg">匯出 CSV</button>
+          <button onclick="clearBackups()" class="bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-bold px-2.5 py-1.5 rounded-lg">清空</button>
         </div>
       </div>
+      <div id="backupListContainer" class="p-3 overflow-y-auto space-y-2 flex-1 text-xs"></div>
+    </div>
+  </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <!-- 同學 A -->
-        <div class="bg-teal-50/70 border-2 border-teal-200 rounded-2xl p-3 space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="bg-brand-teal text-white text-xs font-black px-2.5 py-0.5 rounded-full">同學 A</span>
-            <span class="text-[11px] font-bold text-teal-800">階段一發球 / 階段二接發</span>
-          </div>
-          <div class="grid grid-cols-12 gap-1.5">
-            <input type="text" id="pre-nameA" placeholder="姓名 *" oninput="syncNames('pre'); saveDraft();"
-              class="col-span-5 bg-white border border-teal-200 rounded-xl px-2.5 py-2 text-sm font-bold outline-none" />
-            <input type="text" id="pre-idA" placeholder="學號" oninput="saveDraft()"
-              class="col-span-4 bg-white border border-teal-200 rounded-xl px-2.5 py-2 text-sm font-num outline-none" />
-            <select id="pre-genderA" onchange="saveDraft()" class="col-span-3 bg-white border border-teal-200 rounded-xl px-1.5 py-2 text-sm font-bold outline-none">
-              <option value="男">男</option><option value="女">女</option>
-            </select>
-          </div>
-        </div>
-        <!-- 同學 B -->
-        <div class="bg-sky-50/70 border-2 border-sky-200 rounded-2xl p-3 space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="bg-sky-600 text-white text-xs font-black px-2.5 py-0.5 rounded-full">同學 B</span>
-            <span class="text-[11px] font-bold text-sky-800">階段一接發 / 階段二發球</span>
-          </div>
-          <div class="grid grid-cols-12 gap-1.5">
-            <input type="text" id="pre-nameB" placeholder="姓名 *" oninput="syncNames('pre'); saveDraft();"
-              class="col-span-5 bg-white border border-sky-200 rounded-xl px-2.5 py-2 text-sm font-bold outline-none" />
-            <input type="text" id="pre-idB" placeholder="學號" oninput="saveDraft()"
-              class="col-span-4 bg-white border border-sky-200 rounded-xl px-2.5 py-2 text-sm font-num outline-none" />
-            <select id="pre-genderB" onchange="saveDraft()" class="col-span-3 bg-white border border-sky-200 rounded-xl px-1.5 py-2 text-sm font-bold outline-none">
-              <option value="男">男</option><option value="女">女</option>
-            </select>
-          </div>
-        </div>
+  <!-- ==================== 彈窗：教師端 Google Apps Script 程式碼 ==================== -->
+  <div id="gasCodeModal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-3">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[88vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="bg-slate-900 text-white px-4 py-3 flex items-center justify-between">
+        <h3 class="font-black text-sm text-amber-400">📜 教師端 Google Apps Script (v5.2 逐球歷程版)</h3>
+        <button onclick="closeGasCodeModal()" class="text-slate-400 hover:text-white font-bold px-2">✕</button>
+      </div>
+      <div class="p-3 bg-amber-50 border-b border-amber-200 text-xs text-amber-950 space-y-1">
+        <p class="font-bold">使用說明：此腳本會自動在試算表中建立「預試檢測紀錄（36欄）」與「正式測驗紀錄（68欄）」兩個工作表。</p>
+        <p>部署時請務必選擇：執行身分「我」、誰可以存取「所有人」。</p>
+      </div>
+      <div class="p-3 overflow-y-auto flex-1 bg-slate-950">
+        <pre id="gasScriptCode" class="text-[11px] text-emerald-300 font-mono whitespace-pre-wrap select-all"></pre>
+      </div>
+      <div class="p-3 bg-slate-100 border-t border-slate-200 flex justify-end gap-2">
+        <button onclick="copyGasScript()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-black text-xs px-4 py-2 rounded-xl">📋 一鍵複製程式碼</button>
+        <button onclick="closeGasCodeModal()" class="bg-slate-300 hover:bg-slate-400 text-slate-800 font-bold text-xs px-4 py-2 rounded-xl">關閉</button>
       </div>
     </div>
+  </div>
 
-    <!-- 預試階段一 (3組) -->
-    <div class="bg-white rounded-3xl shadow-sm border-2 border-teal-200/90 overflow-hidden">
-      <div class="bg-brand-teal text-white px-4 py-3 flex items-center justify-between">
-        <div class="font-black text-sm sm:text-base flex items-center gap-2">
-          <span class="bg-white text-teal-900 text-xs px-2 py-0.5 rounded-full font-black">階段一</span>
-          <span><span class="pre-label-A">同學 A</span> 發球 × <span class="pre-label-B">同學 B</span> 接發</span>
-        </div>
-        <span class="text-xs font-bold bg-teal-950/30 px-2.5 py-0.5 rounded-full">共 3 組</span>
-      </div>
-      <div class="grid grid-cols-2 gap-2 px-3 pt-2.5 text-center text-xs font-black">
-        <div class="bg-teal-100/80 text-teal-950 py-1.5 rounded-xl">左側：<span class="pre-label-A">同學 A</span> 發球</div>
-        <div class="bg-sky-100/80 text-sky-950 py-1.5 rounded-xl">右側：<span class="pre-label-B">同學 B</span> 接發</div>
-      </div>
-      <div id="pre-stage1-list" class="p-3 space-y-2.5"></div>
-    </div>
-
-    <!-- 現場角色互換橫幅 -->
-    <div class="bg-gradient-to-r from-amber-500 via-brand-amber to-amber-500 text-brand-navy rounded-2xl p-3 shadow-md text-center text-xs sm:text-sm font-black border border-amber-300">
-      🔄 現場角色互換（<span class="underline pre-label-A">同學 A</span> 改接發球、<span class="underline pre-label-B">同學 B</span> 改發球）
-    </div>
-
-    <!-- 預試階段二 (3組) -->
-    <div class="bg-white rounded-3xl shadow-sm border-2 border-sky-200/90 overflow-hidden">
-      <div class="bg-sky-600 text-white px-4 py-3 flex items-center justify-between">
-        <div class="font-black text-sm sm:text-base flex items-center gap-2">
-          <span class="bg-white text-sky-900 text-xs px-2 py-0.5 rounded-full font-black">階段二</span>
-          <span><span class="pre-label-B">同學 B</span> 發球 × <span class="pre-label-A">同學 A</span> 接發</span>
-        </div>
-        <span class="text-xs font-bold bg-sky-950/30 px-2.5 py-0.5 rounded-full">共 3 組</span>
-      </div>
-      <div class="grid grid-cols-2 gap-2 px-3 pt-2.5 text-center text-xs font-black">
-        <div class="bg-sky-100/80 text-sky-950 py-1.5 rounded-xl">左側：<span class="pre-label-B">同學 B</span> 發球</div>
-        <div class="bg-teal-100/80 text-teal-950 py-1.5 rounded-xl">右側：<span class="pre-label-A">同學 A</span> 接發</div>
-      </div>
-      <div id="pre-stage2-list" class="p-3 space-y-2.5"></div>
-    </div>
-
-    <!-- 預試結算與差異化級距推薦卡 -->
-    <div class="bg-white rounded-3xl shadow-md border-2 border-brand-navy/15 p-4 sm:p-5 space-y-4">
-      <div class="flex items-center justify-between">
-        <h2 class="text-base sm:text-lg font-black text-brand-navy flex items-center gap-2">
-          <i class="fa-solid fa-wand-magic-sparkles text-brand-amber"></i><span>預試結算與正式發球線推薦</span>
-        </h2>
-        <span class="text-xs font-bold text-slate-400">個人滿分 12 分</span>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <!-- 同學 A 推薦卡 -->
-        <div class="bg-teal-50/70 border border-teal-200 rounded-2xl p-3.5 space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="font-black text-sm text-teal-950 truncate pre-label-A">同學 A</span>
-            <div class="font-num"><span id="pre-total-A" class="text-2xl font-black text-brand-teal">0</span><span class="text-xs font-bold text-slate-500"> / 12 分</span></div>
-          </div>
-          <div class="grid grid-cols-2 gap-2 text-center bg-white rounded-xl p-2 border border-teal-100 text-xs">
-            <div>發球：<strong id="pre-serve-A" class="font-num text-teal-700">0</strong> / 6</div>
-            <div>接發：<strong id="pre-recv-A" class="font-num text-teal-700">0</strong> / 6</div>
-          </div>
-          <div id="pre-rec-A" class="text-xs font-black px-3 py-2 rounded-xl text-center bg-slate-200 text-slate-800">推薦正式發球線：3m (+10分)</div>
-        </div>
-
-        <!-- 同學 B 推薦卡 -->
-        <div class="bg-sky-50/70 border border-sky-200 rounded-2xl p-3.5 space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="font-black text-sm text-sky-950 truncate pre-label-B">同學 B</span>
-            <div class="font-num"><span id="pre-total-B" class="text-2xl font-black text-sky-600">0</span><span class="text-xs font-bold text-slate-500"> / 12 分</span></div>
-          </div>
-          <div class="grid grid-cols-2 gap-2 text-center bg-white rounded-xl p-2 border border-sky-100 text-xs">
-            <div>發球：<strong id="pre-serve-B" class="font-num text-sky-700">0</strong> / 6</div>
-            <div>接發：<strong id="pre-recv-B" class="font-num text-sky-700">0</strong> / 6</div>
-          </div>
-          <div id="pre-rec-B" class="text-xs font-black px-3 py-2 rounded-xl text-center bg-slate-200 text-slate-800">推薦正式發球線：3m (+10分)</div>
-        </div>
-      </div>
-
-      <div class="text-[11px] text-slate-500 bg-slate-50 rounded-xl px-3 py-2 border border-slate-200/80 text-center">
-        級距標準：<strong>0～4 分</strong> ➔ 3m (+10) ｜ <strong>5～8 分</strong> ➔ 6m (+15) ｜ <strong>9～12 分</strong> ➔ 9m (+20)
-      </div>
-
-      <!-- 預試送出與帶入正式測驗按鈕 -->
-      <div class="space-y-2.5 pt-1">
-        <button type="button" id="pre-submit-btn" onclick="submitData('pretest')"
-          class="touch-btn w-full bg-brand-navy hover:bg-slate-800 text-white font-black text-sm sm:text-base py-3.5 px-5 rounded-2xl shadow-md flex items-center justify-center gap-2">
-          <i class="fa-solid fa-cloud-arrow-up text-brand-amber"></i><span>送出預試紀錄至雲端</span>
-        </button>
-        <button type="button" onclick="transferPretestToFormal()"
-          class="touch-btn w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm sm:text-base py-4 px-5 rounded-2xl shadow-lg flex items-center justify-center gap-2 border-b-4 border-emerald-800">
-          <i class="fa-solid fa-bolt text-amber-300"></i><span>帶入資料並前往正式測驗（自動套用推薦距離）</span>
-        </button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ======================================================================= -->
-  <!-- 分頁三：③ 正式測驗 (5組) (Formal Test)                                  -->
-  <!-- ======================================================================= -->
-  <section id="view-formal" class="hidden max-w-2xl mx-auto px-4 pt-3 space-y-4">
-    <!-- 正式基本資料與發球位置卡 -->
-    <div class="bg-white rounded-3xl shadow-sm border border-slate-200/90 p-4 sm:p-5 space-y-3.5">
-      <div class="flex items-center justify-between">
-        <h2 class="text-base font-black text-brand-navy flex items-center gap-2">
-          <span class="w-6 h-6 rounded-lg bg-brand-navy text-white font-num text-xs flex items-center justify-center">1</span>正式測驗基本資料（各測 5 組）
-        </h2>
-        <button type="button" onclick="resetSectionScores('formal', this)"
-          class="touch-btn min-h-0 py-1.5 px-2.5 text-xs font-bold text-slate-500 hover:text-rose-600 bg-slate-100 rounded-xl">
-          <i class="fa-solid fa-rotate-left mr-1"></i>清空正式
-        </button>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-        <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1">班級</label>
-          <input type="text" id="form-className" placeholder="例：大一體育甲" oninput="saveDraft()"
-            class="w-full bg-slate-50 border border-slate-300 focus:border-brand-navy focus:bg-white rounded-xl px-3 py-2 text-sm font-bold outline-none" />
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1">組別（共 20 組）</label>
-          <select id="form-groupName" onchange="saveDraft()"
-            class="group-select-20 w-full bg-slate-50 border border-slate-300 focus:border-brand-navy focus:bg-white rounded-xl px-3 py-2 text-sm font-bold outline-none"></select>
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1">觀察員 C 姓名</label>
-          <input type="text" id="form-observerName" placeholder="場邊記錄同學" oninput="saveDraft()"
-            class="w-full bg-slate-50 border border-slate-300 focus:border-brand-navy focus:bg-white rounded-xl px-3 py-2 text-sm font-bold outline-none" />
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <!-- 同學 A -->
-        <div class="bg-teal-50/70 border-2 border-teal-200 rounded-2xl p-3 space-y-2.5">
-          <div class="flex items-center justify-between">
-            <span class="bg-brand-teal text-white text-xs font-black px-2.5 py-0.5 rounded-full">同學 A</span>
-            <span class="text-[11px] font-bold text-teal-800">選擇發球距離起跳分</span>
-          </div>
-          <div class="grid grid-cols-12 gap-1.5">
-            <input type="text" id="form-nameA" placeholder="姓名 *" oninput="syncNames('form'); saveDraft();"
-              class="col-span-5 bg-white border border-teal-200 rounded-xl px-2.5 py-2 text-sm font-bold outline-none" />
-            <input type="text" id="form-idA" placeholder="學號" oninput="saveDraft()"
-              class="col-span-4 bg-white border border-teal-200 rounded-xl px-2.5 py-2 text-sm font-num outline-none" />
-            <select id="form-genderA" onchange="saveDraft()" class="col-span-3 bg-white border border-teal-200 rounded-xl px-1.5 py-2 text-sm font-bold outline-none">
-              <option value="男">男</option><option value="女">女</option>
-            </select>
-          </div>
-          <div class="grid grid-cols-3 gap-1.5">
-            <button type="button" onclick="setFormalPos('A', 10, '3m')" data-pos="10" class="form-pos-A touch-btn min-h-0 py-1.5 rounded-xl border-2 font-num font-black text-xs bg-brand-teal text-white border-brand-teal">3m (+10)</button>
-            <button type="button" onclick="setFormalPos('A', 15, '6m')" data-pos="15" class="form-pos-A touch-btn min-h-0 py-1.5 rounded-xl border-2 font-num font-black text-xs bg-white text-slate-700 border-teal-200">6m (+15)</button>
-            <button type="button" onclick="setFormalPos('A', 20, '9m')" data-pos="20" class="form-pos-A touch-btn min-h-0 py-1.5 rounded-xl border-2 font-num font-black text-xs bg-white text-slate-700 border-teal-200">9m (+20)</button>
-          </div>
-        </div>
-
-        <!-- 同學 B -->
-        <div class="bg-sky-50/70 border-2 border-sky-200 rounded-2xl p-3 space-y-2.5">
-          <div class="flex items-center justify-between">
-            <span class="bg-sky-600 text-white text-xs font-black px-2.5 py-0.5 rounded-full">同學 B</span>
-            <span class="text-[11px] font-bold text-sky-800">選擇發球距離起跳分</span>
-          </div>
-          <div class="grid grid-cols-12 gap-1.5">
-            <input type="text" id="form-nameB" placeholder="姓名 *" oninput="syncNames('form'); saveDraft();"
-              class="col-span-5 bg-white border border-sky-200 rounded-xl px-2.5 py-2 text-sm font-bold outline-none" />
-            <input type="text" id="form-idB" placeholder="學號" oninput="saveDraft()"
-              class="col-span-4 bg-white border border-sky-200 rounded-xl px-2.5 py-2 text-sm font-num outline-none" />
-            <select id="form-genderB" onchange="saveDraft()" class="col-span-3 bg-white border border-sky-200 rounded-xl px-1.5 py-2 text-sm font-bold outline-none">
-              <option value="男">男</option><option value="女">女</option>
-            </select>
-          </div>
-          <div class="grid grid-cols-3 gap-1.5">
-            <button type="button" onclick="setFormalPos('B', 10, '3m')" data-pos="10" class="form-pos-B touch-btn min-h-0 py-1.5 rounded-xl border-2 font-num font-black text-xs bg-sky-600 text-white border-sky-600">3m (+10)</button>
-            <button type="button" onclick="setFormalPos('B', 15, '6m')" data-pos="15" class="form-pos-B touch-btn min-h-0 py-1.5 rounded-xl border-2 font-num font-black text-xs bg-white text-slate-700 border-sky-200">6m (+15)</button>
-            <button type="button" onclick="setFormalPos('B', 20, '9m')" data-pos="20" class="form-pos-B touch-btn min-h-0 py-1.5 rounded-xl border-2 font-num font-black text-xs bg-white text-slate-700 border-sky-200">9m (+20)</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 正式階段一 (5組) -->
-    <div class="bg-white rounded-3xl shadow-sm border-2 border-teal-200/90 overflow-hidden">
-      <div class="bg-brand-teal text-white px-4 py-3 flex flex-wrap items-center justify-between gap-2">
-        <div class="font-black text-sm sm:text-base flex items-center gap-2">
-          <span class="bg-white text-teal-900 text-xs px-2 py-0.5 rounded-full font-black">階段一</span>
-          <span><span class="form-label-A">同學 A</span> 發球 × <span class="form-label-B">同學 B</span> 接發（5 組）</span>
-        </div>
-        <span class="bg-teal-950/40 px-2.5 py-1 rounded-xl text-[11px] font-num font-bold">
-          A發 <strong id="form-s1-serve-sub" class="text-brand-amber">10</strong> ／ B接 <strong id="form-s1-recv-sub">0</strong>
-        </span>
-      </div>
-      <div class="grid grid-cols-2 gap-2 px-3 pt-2.5 text-center text-xs font-black">
-        <div class="bg-teal-100/80 text-teal-950 py-1.5 rounded-xl">左側：<span class="form-label-A">同學 A</span> 發球</div>
-        <div class="bg-sky-100/80 text-sky-950 py-1.5 rounded-xl">右側：<span class="form-label-B">同學 B</span> 接發</div>
-      </div>
-      <div id="form-stage1-list" class="p-3 space-y-2.5"></div>
-    </div>
-
-    <!-- 現場角色互換橫幅 -->
-    <div class="bg-gradient-to-r from-amber-500 via-brand-amber to-amber-500 text-brand-navy rounded-2xl p-3 shadow-md text-center text-xs sm:text-sm font-black border border-amber-300">
-      🔄 現場角色互換（<span class="underline form-label-A">同學 A</span> 改接發球、<span class="underline form-label-B">同學 B</span> 改發球）
-    </div>
-
-    <!-- 正式階段二 (5組) -->
-    <div class="bg-white rounded-3xl shadow-sm border-2 border-sky-200/90 overflow-hidden">
-      <div class="bg-sky-600 text-white px-4 py-3 flex flex-wrap items-center justify-between gap-2">
-        <div class="font-black text-sm sm:text-base flex items-center gap-2">
-          <span class="bg-white text-sky-900 text-xs px-2 py-0.5 rounded-full font-black">階段二</span>
-          <span><span class="form-label-B">同學 B</span> 發球 × <span class="form-label-A">同學 A</span> 接發（5 組）</span>
-        </div>
-        <span class="bg-sky-950/40 px-2.5 py-1 rounded-xl text-[11px] font-num font-bold">
-          B發 <strong id="form-s2-serve-sub" class="text-brand-amber">10</strong> ／ A接 <strong id="form-s2-recv-sub">0</strong>
-        </span>
-      </div>
-      <div class="grid grid-cols-2 gap-2 px-3 pt-2.5 text-center text-xs font-black">
-        <div class="bg-sky-100/80 text-sky-950 py-1.5 rounded-xl">左側：<span class="form-label-B">同學 B</span> 發球</div>
-        <div class="bg-teal-100/80 text-teal-950 py-1.5 rounded-xl">右側：<span class="form-label-A">同學 A</span> 接發</div>
-      </div>
-      <div id="form-stage2-list" class="p-3 space-y-2.5"></div>
-    </div>
-
-    <!-- 質性評量卡（同儕回饋 + 自我評量） -->
-    <div class="bg-white rounded-3xl shadow-sm border border-slate-200/90 p-4 sm:p-5 space-y-3.5">
-      <h2 class="text-base font-black text-brand-navy flex items-center gap-2">
-        <span class="w-6 h-6 rounded-lg bg-brand-navy text-white font-num text-xs flex items-center justify-center">2</span>同儕回饋與自我評量
-      </h2>
-      <div id="formal-feedback-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5"></div>
-    </div>
-
-    <!-- 正式總結算儀表板 -->
-    <div class="bg-brand-navy text-white rounded-3xl shadow-xl border-2 border-slate-700 p-4 sm:p-5 space-y-3.5">
-      <div class="flex items-center justify-between">
-        <h2 class="text-base font-black flex items-center gap-2 text-brand-amber"><i class="fa-solid fa-trophy"></i>正式測驗總成績結算</h2>
-        <span class="text-xs text-slate-400">發球＋距離加分＋接發</span>
-      </div>
-      <div class="bg-slate-900/90 border-2 border-brand-amber rounded-2xl p-3 text-center">
-        <div class="text-xs font-bold text-amber-300">雙人合作總分（A 總分 ＋ B 總分）</div>
-        <div id="form-pair-total" class="text-3xl sm:text-4xl font-black font-num text-white mt-0.5">20</div>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div class="bg-teal-950/60 border border-teal-500/40 rounded-2xl p-3 text-center">
-          <div class="text-xs font-black text-teal-300 truncate form-label-A">同學 A</div>
-          <div id="form-total-A" class="text-2xl sm:text-3xl font-black font-num text-white my-0.5">10</div>
-          <div class="text-[11px] text-slate-300 font-num">發 <strong id="form-sub-serve-A" class="text-amber-300">10</strong> ＋ 接 <strong id="form-sub-recv-A" class="text-teal-200">0</strong></div>
-        </div>
-        <div class="bg-sky-950/60 border border-sky-500/40 rounded-2xl p-3 text-center">
-          <div class="text-xs font-black text-sky-300 truncate form-label-B">同學 B</div>
-          <div id="form-total-B" class="text-2xl sm:text-3xl font-black font-num text-white my-0.5">10</div>
-          <div class="text-[11px] text-slate-300 font-num">發 <strong id="form-sub-serve-B" class="text-amber-300">10</strong> ＋ 接 <strong id="form-sub-recv-B" class="text-sky-200">0</strong></div>
-        </div>
-      </div>
-      <button type="button" id="form-submit-btn" onclick="submitData('formal')"
-        class="touch-btn w-full bg-brand-amber hover:bg-amber-400 text-brand-navy font-black text-base py-4 px-6 rounded-2xl shadow-lg flex items-center justify-center gap-2.5">
-        <i class="fa-solid fa-cloud-arrow-up text-lg"></i><span>送出正式測驗紀錄至雲端</span>
-      </button>
-    </div>
-  </section>
+  <!-- Toast 提示訊息 -->
+  <div id="toastBox" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-full shadow-xl border border-slate-700 whitespace-nowrap"></div>
 
   <script>
-    // =========================================================================
-    // 1. 常數與資料狀態 (精簡動態渲染架構)
-    // =========================================================================
-    const KEYS = { GAS: 'vb_v52_gas', DRAFT: 'vb_v52_draft', BACKUP: 'vb_v52_backup' };
-    const KEY_POINTS = ['1. 屈膝微蹲屈肘放鬆', '2. 依來球選擇高手/低手', '3. 重心放低朝向目標', '4. 穩定控制高度與距離'];
-    const GAME_MODES = {
-      1: ['小組合作輪轉積分賽：', '發完球者移動到接球位置，接完球者移動到發球位置，限時內累積最高積分。'],
-      2: ['對抗式雙人站位策略賽：', '發球員將球發進指定空間；兩位接發球員根據站位與穩定性擬定接發球策略。'],
-      3: ['接球轉前區舉球補位賽：', '有接到發球者移動到前區擔任舉球角色，未接到者留原地繼續接球，場外人員依序補進。']
+    // ==================== 1. 全域設定與狀態 ====================
+    // 已直接寫入您的 Google Apps Script 部署網址作為預設值，全班手機開啟即自動連線
+    const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbwkkYIJpaxgjN8_rjSn2NO7-slZATN1BGbzCiz5nqwWiW57-T27AhXSjGNaHncZSmjz/exec';
+    const STORAGE_KEY_URL = 'volleyball_v5_gas_url';
+    const STORAGE_KEY_BACKUP = 'volleyball_v5_2_backups';
+
+    // 預試計分狀態：s1[0..2], s2[0..2]，每球為 [發過網, 發落區, 接接到, 接落區]
+    let preScores = {
+      s1: [[0,0,0,0], [0,0,0,0], [0,0,0,0]],
+      s2: [[0,0,0,0], [0,0,0,0], [0,0,0,0]]
     };
 
-    const GAS_BACKEND_SCRIPT = `// 排球「有球必 in」差異化評量系統 v5.2 - 逐球歷程紀錄版後端
-function doPost(e) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var d = JSON.parse(e.postData.contents);
-  if (d.mode === "ping") {
-    return ContentService.createTextOutput(JSON.stringify({ status: "pong" })).setMimeType(ContentService.MimeType.JSON);
-  }
-  if (d.mode === "pretest") {
-    var sheet = ss.getSheetByName("預試檢測紀錄") || ss.insertSheet("預試檢測紀錄");
-    if (sheet.getLastRow() === 0) {
-      var h = ["提交時間","班級","組別","觀察員C","同學A姓名","同學A學號","同學A性別","A預試發球(6)","A預試接發(6)","A預試總分(12)","A推薦正式距離","同學B姓名","同學B學號","同學B性別","B預試發球(6)","B預試接發(6)","B預試總分(12)","B推薦正式距離"];
-      for (var i = 1; i <= 3; i++) h.push("S1第"+i+"球_A發過網","S1第"+i+"球_A發落區","S1第"+i+"球_B接接到","S1第"+i+"球_B接落區");
-      for (var j = 1; j <= 3; j++) h.push("S2第"+j+"球_B發過網","S2第"+j+"球_B發落區","S2第"+j+"球_A接接到","S2第"+j+"球_A接落區");
-      h.push("預試逐球過程摘要");
-      sheet.appendRow(h);
-    }
-    var r = [d.timestamp,d.className,d.groupName,d.observerName,d.studentA.name,d.studentA.studentId,d.studentA.gender,d.studentA.serveScore,d.studentA.recvScore,d.studentA.totalScore,d.studentA.recommendedDist,d.studentB.name,d.studentB.studentId,d.studentB.gender,d.studentB.serveScore,d.studentB.recvScore,d.studentB.totalScore,d.studentB.recommendedDist];
-    (d.stage1Trials||[]).forEach(function(t){ r.push(t.sNet,t.sZone,t.rHit,t.rZone); });
-    (d.stage2Trials||[]).forEach(function(t){ r.push(t.sNet,t.sZone,t.rHit,t.rZone); });
-    r.push(d.trialSummaryText || "");
-    sheet.appendRow(r);
-  } else {
-    var sheet = ss.getSheetByName("正式測驗紀錄") || ss.insertSheet("正式測驗紀錄");
-    if (sheet.getLastRow() === 0) {
-      var h = ["提交時間","班級","組別","觀察員C","雙人合作總分","A姓名","A學號","A性別","A發球距離","A距離加分","A發過網數","A發落區數","A發球總分","A接接到數","A接落區數","A接發總分","A個人總分","A同儕流暢","A同儕未做到要點","A同儕建議","A自評更好","A自評未做到要點","A自我心得","B姓名","B學號","B性別","B發球距離","B距離加分","B發過網數","B發落區數","B發球總分","B接接到數","B接落區數","B接發總分","B個人總分","B同儕流暢","B同儕未做到要點","B同儕建議","B自評更好","B自評未做到要點","B自我心得"];
-      for (var i = 1; i <= 5; i++) h.push("S1第"+i+"球_A發過網","S1第"+i+"球_A發落區","S1第"+i+"球_B接接到","S1第"+i+"球_B接落區");
-      for (var j = 1; j <= 5; j++) h.push("S2第"+j+"球_B發過網","S2第"+j+"球_B發落區","S2第"+j+"球_A接接到","S2第"+j+"球_A接落區");
-      h.push("正式逐球過程摘要");
-      sheet.appendRow(h);
-    }
-    var a = d.studentA, b = d.studentB;
-    var r = [d.timestamp,d.className,d.groupName,d.observerName,d.pairTotal,a.name,a.studentId,a.gender,a.servePosLabel,a.servePosBonus,a.serveNet,a.serveZone,a.serveTotal,a.recvHit,a.recvZone,a.recvTotal,a.personalTotal,a.peerFluent,a.peerMissing,a.peerNote,a.selfBetter,a.selfMissing,a.selfNote,b.name,b.studentId,b.gender,b.servePosLabel,b.servePosBonus,b.serveNet,b.serveZone,b.serveTotal,b.recvHit,b.recvZone,b.recvTotal,b.personalTotal,b.peerFluent,b.peerMissing,b.peerNote,b.selfBetter,b.selfMissing,b.selfNote];
-    (d.stage1Trials||[]).forEach(function(t){ r.push(t.sNet,t.sZone,t.rHit,t.rZone); });
-    (d.stage2Trials||[]).forEach(function(t){ r.push(t.sNet,t.sZone,t.rHit,t.rZone); });
-    r.push(d.trialSummaryText || "");
-    sheet.appendRow(r);
-  }
-  return ContentService.createTextOutput(JSON.stringify({ status: "ok" })).setMimeType(ContentService.MimeType.JSON);
-}`;
-
-    const mkTrials = n => Array.from({ length: n }, () => ({ sNet: 0, sZone: 0, rHit: 0, rZone: 0 }));
-    const mkFb = () => ({ peerFluent: false, peerMissing: [], peerNote: '', selfBetter: false, selfMissing: [], selfNote: '' });
-
-    let state = {
-      pretest: { stage1: mkTrials(3), stage2: mkTrials(3) },
-      formal: { posBonusA: 10, posLabelA: '3m', posBonusB: 10, posLabelB: '3m', stage1: mkTrials(5), stage2: mkTrials(5), fbA: mkFb(), fbB: mkFb() }
+    // 正式計分狀態：s1[0..4], s2[0..4]，每球為 [發過網, 發落區, 接接到, 接落區]
+    let frmScores = {
+      s1: [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]],
+      s2: [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]]
     };
 
-    // =========================================================================
-    // 2. 初始化渲染
-    // =========================================================================
-    window.addEventListener('DOMContentLoaded', () => {
-      // 填充第 1 組～第 20 組下拉選單
-      const optionsHtml = Array.from({ length: 20 }, (_, i) => `<option value="第${i + 1}組">第 ${i + 1} 組</option>`).join('');
-      document.querySelectorAll('.group-select-20').forEach(sel => sel.innerHTML = optionsHtml);
-
-      // 填充操作方式 Key Points 與 GAS 程式碼
-      document.getElementById('guide-keypoints-grid').innerHTML = KEY_POINTS.map((kp, i) => `
-        <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3 flex items-center gap-2.5">
-          <span class="w-6 h-6 rounded-lg bg-brand-navy text-white font-num font-black text-xs flex items-center justify-center shrink-0">${i + 1}</span>
-          <span class="text-xs sm:text-sm font-bold text-slate-700">${kp.replace(/^\d+\.\s*/, '')}</span>
-        </div>`).join('');
-      document.getElementById('gas-code-block').textContent = GAS_BACKEND_SCRIPT;
-      selectGameMode(1);
-
-      loadDraft();
-      renderAllLists();
-      renderFeedbackCards();
-      calcPretest();
-      calcFormal();
-      syncGasUI();
-      renderBackupList();
+    // ==================== 2. 初始化畫面 ====================
+    document.addEventListener('DOMContentLoaded', () => {
+      initGroupSelects();
+      renderTrialCards('pre', 's1', 3, '同學 A 發球', '同學 B 接發');
+      renderTrialCards('pre', 's2', 3, '同學 B 發球', '同學 A 接發');
+      renderTrialCards('frm', 's1', 5, '同學 A 發球', '同學 B 接發');
+      renderTrialCards('frm', 's2', 5, '同學 B 發球', '同學 A 接發');
+      initGasConnection();
+      updateBackupBadge();
+      recalcPretest();
+      recalcFormal();
     });
 
-    function showToast(msg, type = 'info') {
-      const themes = {
-        success: 'bg-brand-teal text-white border-teal-300',
-        warning: 'bg-brand-amber text-brand-navy border-amber-300',
-        error: 'bg-rose-600 text-white border-rose-300',
-        info: 'bg-brand-navy text-white border-slate-600'
-      };
-      const el = document.createElement('div');
-      el.className = `pointer-events-auto px-4 py-3 rounded-2xl shadow-xl border text-xs sm:text-sm font-black transition-all duration-300 ${themes[type] || themes.info}`;
-      el.textContent = msg;
-      document.getElementById('toast-container').appendChild(el);
-      setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 2800);
+    // 填入第 1 組～第 20 組選項
+    function initGroupSelects() {
+      const selects = document.querySelectorAll('.group-select');
+      let optionsHtml = '';
+      for (let i = 1; i <= 20; i++) {
+        optionsHtml += `<option value="第${i}組">第 ${i} 組</option>`;
+      }
+      selects.forEach(sel => sel.innerHTML = optionsHtml);
     }
 
-    function switchTab(tab) {
+    // 動態生成每一球的並排計分卡片
+    function renderTrialCards(mode, stage, count, serverLabel, receiverLabel) {
+      const container = document.getElementById(`${mode}-stage${stage === 's1' ? '1' : '2'}-container`);
+      let html = '';
+      for (let i = 0; i < count; i++) {
+        html += `
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-black text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">第 ${i + 1} 球</span>
+              <span id="${mode}-${stage}-ball-${i}-sum" class="text-[11px] font-bold text-slate-400">本球：發 0 分 / 接 0 分</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <!-- 發球側 -->
+              <div class="bg-sky-50/80 border border-sky-200/80 rounded-lg p-2 space-y-1.5">
+                <div class="text-[11px] font-black text-sky-900 text-center">${serverLabel}</div>
+                <div class="grid grid-cols-2 gap-1">
+                  <button type="button" id="${mode}-${stage}-${i}-0" onclick="toggleScore('${mode}','${stage}',${i},0)"
+                    class="score-btn py-2 px-1 rounded-lg text-xs font-bold bg-white text-slate-600 border border-slate-300">
+                    過網 +1
+                  </button>
+                  <button type="button" id="${mode}-${stage}-${i}-1" onclick="toggleScore('${mode}','${stage}',${i},1)"
+                    class="score-btn py-2 px-1 rounded-lg text-xs font-bold bg-white text-slate-600 border border-slate-300">
+                    落區 +1
+                  </button>
+                </div>
+              </div>
+              <!-- 接發球側 -->
+              <div class="bg-emerald-50/80 border border-emerald-200/80 rounded-lg p-2 space-y-1.5">
+                <div class="text-[11px] font-black text-emerald-900 text-center">${receiverLabel}</div>
+                <div class="grid grid-cols-2 gap-1">
+                  <button type="button" id="${mode}-${stage}-${i}-2" onclick="toggleScore('${mode}','${stage}',${i},2)"
+                    class="score-btn py-2 px-1 rounded-lg text-xs font-bold bg-white text-slate-600 border border-slate-300">
+                    接到 +1
+                  </button>
+                  <button type="button" id="${mode}-${stage}-${i}-3" onclick="toggleScore('${mode}','${stage}',${i},3)"
+                    class="score-btn py-2 px-1 rounded-lg text-xs font-bold bg-white text-slate-600 border border-slate-300">
+                    落區 +1
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      container.innerHTML = html;
+    }
+
+    // ==================== 3. 計分點擊與自動防呆連動 ====================
+    function toggleScore(mode, stage, idx, col) {
+      const store = mode === 'pre' ? preScores : frmScores;
+      const arr = store[stage][idx];
+      const newVal = arr[col] === 1 ? 0 : 1;
+      arr[col] = newVal;
+
+      // 防呆連動：勾選「落區(+1)」時自動連帶勾選「過網/接到(+1)」；取消「過網/接到」時連帶取消「落區」
+      if (col === 1 && newVal === 1) arr[0] = 1;
+      if (col === 0 && newVal === 0) arr[1] = 0;
+      if (col === 3 && newVal === 1) arr[2] = 1;
+      if (col === 2 && newVal === 0) arr[3] = 0;
+
+      updateBallButtonsUI(mode, stage, idx, arr);
+      if (mode === 'pre') recalcPretest();
+      else recalcFormal();
+    }
+
+    function updateBallButtonsUI(mode, stage, idx, arr) {
+      for (let c = 0; c < 4; c++) {
+        const btn = document.getElementById(`${mode}-${stage}-${idx}-${c}`);
+        const isServe = c < 2;
+        if (arr[c] === 1) {
+          btn.className = isServe
+            ? 'score-btn py-2 px-1 rounded-lg text-xs font-black bg-sky-600 text-white border border-sky-700 shadow-sm'
+            : 'score-btn py-2 px-1 rounded-lg text-xs font-black bg-emerald-600 text-white border border-emerald-700 shadow-sm';
+        } else {
+          btn.className = 'score-btn py-2 px-1 rounded-lg text-xs font-bold bg-white text-slate-600 border border-slate-300';
+        }
+      }
+      const sSum = arr[0] + arr[1];
+      const rSum = arr[2] + arr[3];
+      document.getElementById(`${mode}-${stage}-ball-${idx}-sum`).textContent = `本球：發 ${sSum} 分 / 接 ${rSum} 分`;
+    }
+
+    // 計算預試總分與推薦發球位置
+    function recalcPretest() {
+      let s1A = 0, s1B = 0, s2B = 0, s2A = 0;
+      preScores.s1.forEach(b => { s1A += b[0] + b[1]; s1B += b[2] + b[3]; });
+      preScores.s2.forEach(b => { s2B += b[0] + b[1]; s2A += b[2] + b[3]; });
+
+      const totalA = s1A + s2A;
+      const totalB = s1B + s2B;
+
+      document.getElementById('pre-s1-a-score').textContent = s1A;
+      document.getElementById('pre-s1-b-score').textContent = s1B;
+      document.getElementById('pre-s2-b-score').textContent = s2B;
+      document.getElementById('pre-s2-a-score').textContent = s2A;
+      document.getElementById('pre-total-a').textContent = totalA;
+      document.getElementById('pre-total-b').textContent = totalB;
+
+      document.getElementById('pre-rec-a').textContent = getRecommendDist(totalA).text;
+      document.getElementById('pre-rec-b').textContent = getRecommendDist(totalB).text;
+    }
+
+    function getRecommendDist(score) {
+      if (score >= 9) return { val: '20', text: '9m (+20)' };
+      if (score >= 5) return { val: '15', text: '6m (+15)' };
+      return { val: '10', text: '3m (+10)' };
+    }
+
+    // 計算正式測驗總分
+    function recalcFormal() {
+      let s1A = 0, s1B = 0, s2B = 0, s2A = 0;
+      frmScores.s1.forEach(b => { s1A += b[0] + b[1]; s1B += b[2] + b[3]; });
+      frmScores.s2.forEach(b => { s2B += b[0] + b[1]; s2A += b[2] + b[3]; });
+
+      const distA = parseInt(document.getElementById('frm-a-dist').value || '10', 10);
+      const distB = parseInt(document.getElementById('frm-b-dist').value || '10', 10);
+
+      const totalA = s1A + distA + s2A;
+      const totalB = s1B + distB + s2B;
+
+      document.getElementById('frm-s1-a-score').textContent = s1A;
+      document.getElementById('frm-s1-b-score').textContent = s1B;
+      document.getElementById('frm-s2-b-score').textContent = s2B;
+      document.getElementById('frm-s2-a-score').textContent = s2A;
+
+      document.getElementById('frm-total-a').textContent = totalA;
+      document.getElementById('frm-total-b').textContent = totalB;
+      document.getElementById('frm-detail-a').textContent = `發${s1A} + 距離${distA} + 接${s2A}`;
+      document.getElementById('frm-detail-b').textContent = `發${s2B} + 距離${distB} + 接${s1B}`;
+      document.getElementById('frm-pair-total').textContent = totalA + totalB;
+    }
+
+    // ==================== 4. 分頁切換與操作指南互動 ====================
+    function switchTab(tabName) {
       ['guide', 'pretest', 'formal'].forEach(t => {
-        document.getElementById(`view-${t}`).classList.toggle('hidden', t !== tab);
-        document.getElementById(`nav-tab-${t}`).className = t === tab
-          ? 'touch-btn min-h-0 py-2.5 px-1.5 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-1 bg-brand-amber text-brand-navy shadow'
-          : 'touch-btn min-h-0 py-2.5 px-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1 text-slate-300 hover:bg-white/10';
+        document.getElementById(`view-${t}`).classList.toggle('hidden', t !== tabName);
+        const btn = document.getElementById(`tab-${t}`);
+        btn.className = t === tabName
+          ? 'tab-active py-1.5 px-2 rounded-lg text-xs sm:text-sm flex items-center justify-center gap-1 transition'
+          : 'tab-inactive py-1.5 px-2 rounded-lg text-xs sm:text-sm flex items-center justify-center gap-1 transition';
       });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function toggleDrawer(id) {
-      ['gas-drawer', 'backup-drawer'].forEach(d => {
-        const el = document.getElementById(d);
-        if (d === id) el.classList.toggle('hidden');
-        else el.classList.add('hidden');
-      });
-    }
-
-    // =========================================================================
-    // 3. 操作方式分頁互動
-    // =========================================================================
-    function selectSvgRole(role) {
-      const texts = {
-        all: '每半場分 <strong>A、B、C 三組</strong>輪替：A 發球、B 接球進目標區、C 場邊同步觀察並記錄每一球過程與分數。',
-        A: '<strong class="text-teal-700">【A 組發球任務】</strong>站於右側發球區（3m/6m/9m），依序發球過網給對面 B 組。',
-        B: '<strong class="text-sky-700">【B 組接發任務】</strong>判斷來球移動腳步，將球穩穩傳入前排「目標落地區（舉球位）」。',
-        C: '<strong class="text-amber-700">【C 組觀察任務】</strong>站於場邊看一球同時記錄發球與接發球得分，結束後給予動作要點回饋。'
-      };
+    function highlightRole(role) {
       ['all', 'A', 'B', 'C'].forEach(r => {
-        document.getElementById(`svg-role-btn-${r}`).className = r === role
-          ? 'touch-btn min-h-0 py-2 px-1 rounded-xl text-xs font-black bg-brand-navy text-white shadow-sm'
-          : 'touch-btn min-h-0 py-2 px-1 rounded-xl text-xs font-bold text-slate-600 hover:bg-white/70';
+        const btn = document.getElementById(`roleBtn-${r}`);
+        btn.className = r === role
+          ? 'role-btn-active py-1.5 rounded-lg text-xs font-bold transition'
+          : 'py-1.5 rounded-lg text-xs font-bold text-slate-600 transition';
       });
-      document.getElementById('svg-role-desc').innerHTML = texts[role];
-      const map = { A: ['svg-group-A'], B: ['svg-group-B', 'svg-target-zones'], C: ['svg-group-C', 'svg-group-B'] };
-      ['svg-group-A', 'svg-group-B', 'svg-group-C', 'svg-target-zones'].forEach(id => {
-        const el = document.getElementById(id);
-        el.classList.remove('svg-dimmed', 'svg-highlighted');
-        if (role !== 'all') el.classList.add(map[role].includes(id) ? 'svg-highlighted' : 'svg-dimmed');
-      });
-    }
+      const svgA = document.getElementById('svg-role-A');
+      const svgB = document.getElementById('svg-role-B');
+      const svgC = document.getElementById('svg-role-C');
+      const hint = document.getElementById('roleHintText');
 
-    function selectGameMode(n) {
-      [1, 2, 3].forEach(i => {
-        document.getElementById(`game-mode-btn-${i}`).className = i === n
-          ? 'touch-btn min-h-0 py-2 px-1 rounded-xl text-xs font-black bg-brand-navy text-white shadow-sm'
-          : 'touch-btn min-h-0 py-2 px-1 rounded-xl text-xs font-bold text-slate-600';
-      });
-      document.getElementById('game-mode-box').innerHTML = `<strong class="text-brand-navy block mb-1">${GAME_MODES[n][0]}</strong>${GAME_MODES[n][1]}`;
-    }
-
-    // =========================================================================
-    // 4. 動態渲染計分卡片與智慧防呆連動
-    // =========================================================================
-    function renderAllLists() {
-      renderTrialList('pretest', 'stage1', 'pre-stage1-list', 'teal', 'sky');
-      renderTrialList('pretest', 'stage2', 'pre-stage2-list', 'sky', 'teal');
-      renderTrialList('formal', 'stage1', 'form-stage1-list', 'teal', 'sky');
-      renderTrialList('formal', 'stage2', 'form-stage2-list', 'sky', 'teal');
-    }
-
-    function renderTrialList(sec, stg, containerId, sCol, rCol) {
-      const sCls = sCol === 'teal' ? 'bg-brand-teal border-brand-teal text-white' : 'bg-sky-600 border-sky-600 text-white';
-      const rCls = rCol === 'sky' ? 'bg-sky-600 border-sky-600 text-white' : 'bg-brand-teal border-brand-teal text-white';
-      document.getElementById(containerId).innerHTML = state[sec][stg].map((t, i) => `
-        <div class="bg-slate-50/90 rounded-2xl border border-slate-200 p-2.5">
-          <div class="flex items-center justify-between mb-1.5 px-1 text-xs">
-            <span class="font-black text-brand-navy flex items-center gap-1.5">
-              <span class="w-5 h-5 rounded-md bg-brand-navy text-brand-amber font-num text-[11px] flex items-center justify-center">${i + 1}</span>第 ${i + 1} 組
-            </span>
-            <span class="font-num font-bold text-[11px] text-slate-600">發球 +${t.sNet + t.sZone} ｜ 接發 +${t.rHit + t.rZone}</span>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div class="grid grid-cols-2 gap-1.5 bg-white p-1.5 rounded-xl border border-slate-200/70">
-              <button type="button" onclick="toggleScore('${sec}','${stg}',${i},'sNet')"
-                class="touch-btn min-h-0 py-2 rounded-lg border-2 font-black text-xs flex flex-col items-center ${t.sNet ? sCls : 'bg-slate-50 border-slate-200 text-slate-600'}">
-                <span>過網</span><span class="font-num text-[10px] opacity-80">+1</span>
-              </button>
-              <button type="button" onclick="toggleScore('${sec}','${stg}',${i},'sZone')"
-                class="touch-btn min-h-0 py-2 rounded-lg border-2 font-black text-xs flex flex-col items-center ${t.sZone ? 'bg-brand-amber border-amber-500 text-brand-navy' : 'bg-slate-50 border-slate-200 text-slate-600'}">
-                <span>落區</span><span class="font-num text-[10px] opacity-80">+1</span>
-              </button>
-            </div>
-            <div class="grid grid-cols-2 gap-1.5 bg-white p-1.5 rounded-xl border border-slate-200/70">
-              <button type="button" onclick="toggleScore('${sec}','${stg}',${i},'rHit')"
-                class="touch-btn min-h-0 py-2 rounded-lg border-2 font-black text-xs flex flex-col items-center ${t.rHit ? rCls : 'bg-slate-50 border-slate-200 text-slate-600'}">
-                <span>接到</span><span class="font-num text-[10px] opacity-80">+1</span>
-              </button>
-              <button type="button" onclick="toggleScore('${sec}','${stg}',${i},'rZone')"
-                class="touch-btn min-h-0 py-2 rounded-lg border-2 font-black text-xs flex flex-col items-center ${t.rZone ? 'bg-brand-amber border-amber-500 text-brand-navy' : 'bg-slate-50 border-slate-200 text-slate-600'}">
-                <span>落區</span><span class="font-num text-[10px] opacity-80">+1</span>
-              </button>
-            </div>
-          </div>
-        </div>`).join('');
-    }
-
-    function toggleScore(sec, stg, idx, field) {
-      const t = state[sec][stg][idx];
-      t[field] = t[field] ? 0 : 1;
-      if (field === 'sZone' && t.sZone) t.sNet = 1;
-      if (field === 'sNet' && !t.sNet) t.sZone = 0;
-      if (field === 'rZone' && t.rZone) t.rHit = 1;
-      if (field === 'rHit' && !t.rHit) t.rZone = 0;
-
-      renderAllLists();
-      sec === 'pretest' ? calcPretest() : calcFormal();
-      saveDraft();
-    }
-
-    function resetSectionScores(sec, btn) {
-      if (btn.dataset.ok !== '1') {
-        btn.dataset.ok = '1';
-        btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i>再按確認';
-        btn.classList.add('bg-rose-100', 'text-rose-700');
-        setTimeout(() => { btn.dataset.ok = '0'; btn.innerHTML = `<i class="fa-solid fa-rotate-left mr-1"></i>清空${sec === 'pretest' ? '預試' : '正式'}`; btn.classList.remove('bg-rose-100', 'text-rose-700'); }, 2500);
-        return;
+      if (role === 'all') {
+        svgA.style.opacity = '1'; svgB.style.opacity = '1'; svgC.style.opacity = '1';
+        hint.textContent = '每半場分 A、B、C 三組輪替：A 發球、B 接球進目標區、C 場邊同步觀察並記錄每一球過程與分數。';
+      } else if (role === 'A') {
+        svgA.style.opacity = '1'; svgB.style.opacity = '0.25'; svgC.style.opacity = '0.25';
+        hint.textContent = '【A組 發球任務】站於選定距離線（3m / 6m / 9m），穩定將球發過網（+1分）並落入對方三米線後區域（+1分）。';
+      } else if (role === 'B') {
+        svgA.style.opacity = '0.25'; svgB.style.opacity = '1'; svgC.style.opacity = '0.25';
+        hint.textContent = '【B組 接發任務】判斷來球軌跡迅速移動，將球接起（+1分）並穩定傳入前排舉球目標落地區（+1分）。';
+      } else if (role === 'C') {
+        svgA.style.opacity = '0.25'; svgB.style.opacity = '0.25'; svgC.style.opacity = '1';
+        hint.textContent = '【C組 觀察員】拿手機打開本系統，即時點選每一球的過網/接到與落區得分，結束後勾選動作要點並給予回饋。';
       }
-      btn.dataset.ok = '0';
-      btn.innerHTML = `<i class="fa-solid fa-rotate-left mr-1"></i>清空${sec === 'pretest' ? '預試' : '正式'}`;
-      btn.classList.remove('bg-rose-100', 'text-rose-700');
-
-      if (sec === 'pretest') {
-        state.pretest = { stage1: mkTrials(3), stage2: mkTrials(3) };
-        calcPretest();
-      } else {
-        state.formal.stage1 = mkTrials(5);
-        state.formal.stage2 = mkTrials(5);
-        state.formal.fbA = mkFb();
-        state.formal.fbB = mkFb();
-        renderFeedbackCards();
-        calcFormal();
-      }
-      renderAllLists();
-      saveDraft();
-      showToast('已清空分數紀錄', 'info');
     }
 
-    // =========================================================================
-    // 5. 預試計算、推薦距離與帶入正式測驗
-    // =========================================================================
-    function syncNames(prefix) {
-      const nA = document.getElementById(`${prefix}-nameA`).value.trim() || '同學 A';
-      const nB = document.getElementById(`${prefix}-nameB`).value.trim() || '同學 B';
-      document.querySelectorAll(`.${prefix}-label-A`).forEach(el => el.textContent = nA);
-      document.querySelectorAll(`.${prefix}-label-B`).forEach(el => el.textContent = nB);
-    }
+    // ==================== 5. 預試一鍵帶入正式測驗 ====================
+    function applyPretestToFormal() {
+      document.getElementById('frm-class').value = document.getElementById('pre-class').value;
+      document.getElementById('frm-group').value = document.getElementById('pre-group').value;
+      document.getElementById('frm-a-name').value = document.getElementById('pre-a-name').value;
+      document.getElementById('frm-a-id').value = document.getElementById('pre-a-id').value;
+      document.getElementById('frm-a-gender').value = document.getElementById('pre-a-gender').value;
+      document.getElementById('frm-b-name').value = document.getElementById('pre-b-name').value;
+      document.getElementById('frm-b-id').value = document.getElementById('pre-b-id').value;
+      document.getElementById('frm-b-gender').value = document.getElementById('pre-b-gender').value;
 
-    function getRecDist(score) {
-      if (score >= 9) return { bonus: 20, label: '9m', text: '推薦正式發球線：9m (+20分)', cls: 'bg-brand-amber text-brand-navy shadow-sm' };
-      if (score >= 5) return { bonus: 15, label: '6m', text: '推薦正式發球線：6m (+15分)', cls: 'bg-sky-600 text-white shadow-sm' };
-      return { bonus: 10, label: '3m', text: '推薦正式發球線：3m (+10分)', cls: 'bg-slate-200 text-slate-800' };
-    }
+      const totalA = parseInt(document.getElementById('pre-total-a').textContent, 10);
+      const totalB = parseInt(document.getElementById('pre-total-b').textContent, 10);
+      document.getElementById('frm-a-dist').value = getRecommendDist(totalA).val;
+      document.getElementById('frm-b-dist').value = getRecommendDist(totalB).val;
 
-    function calcPretest() {
-      const sA = state.pretest.stage1.reduce((a, b) => a + b.sNet + b.sZone, 0);
-      const rA = state.pretest.stage2.reduce((a, b) => a + b.rHit + b.rZone, 0);
-      const tA = sA + rA;
-      const sB = state.pretest.stage2.reduce((a, b) => a + b.sNet + b.sZone, 0);
-      const rB = state.pretest.stage1.reduce((a, b) => a + b.rHit + b.rZone, 0);
-      const tB = sB + rB;
-
-      document.getElementById('pre-serve-A').textContent = sA;
-      document.getElementById('pre-recv-A').textContent = rA;
-      document.getElementById('pre-total-A').textContent = tA;
-      document.getElementById('pre-serve-B').textContent = sB;
-      document.getElementById('pre-recv-B').textContent = rB;
-      document.getElementById('pre-total-B').textContent = tB;
-
-      const recA = getRecDist(tA), recB = getRecDist(tB);
-      const elA = document.getElementById('pre-rec-A'), elB = document.getElementById('pre-rec-B');
-      elA.textContent = recA.text; elA.className = `text-xs font-black px-3 py-2 rounded-xl text-center ${recA.cls}`;
-      elB.textContent = recB.text; elB.className = `text-xs font-black px-3 py-2 rounded-xl text-center ${recB.cls}`;
-      return { sA, rA, tA, recA, sB, rB, tB, recB };
-    }
-
-    function transferPretestToFormal() {
-      const c = calcPretest();
-      ['className', 'groupName', 'observerName', 'nameA', 'idA', 'genderA', 'nameB', 'idB', 'genderB'].forEach(k => {
-        document.getElementById(`form-${k}`).value = document.getElementById(`pre-${k}`).value;
-      });
-      setFormalPos('A', c.recA.bonus, c.recA.label);
-      setFormalPos('B', c.recB.bonus, c.recB.label);
-      syncNames('form');
-      saveDraft();
+      recalcFormal();
       switchTab('formal');
-      showToast(`已帶入雙人資料並套用推薦距離（A: ${c.recA.label} / B: ${c.recB.label}）`, 'success');
+      showToast('✅ 已帶入學生資料與推薦發球距離！');
     }
 
-    // =========================================================================
-    // 6. 正式測驗計算與質性回饋卡片
-    // =========================================================================
-    function setFormalPos(p, bonus, label) {
-      state.formal[`posBonus${p}`] = bonus;
-      state.formal[`posLabel${p}`] = label;
-      const on = p === 'A' ? 'bg-brand-teal text-white border-brand-teal' : 'bg-sky-600 text-white border-sky-600';
-      const off = p === 'A' ? 'bg-white text-slate-700 border-teal-200' : 'bg-white text-slate-700 border-sky-200';
-      document.querySelectorAll(`.form-pos-${p}`).forEach(b => {
-        b.className = `form-pos-${p} touch-btn min-h-0 py-1.5 rounded-xl border-2 font-num font-black text-xs ${+b.dataset.pos === bonus ? on : off}`;
-      });
-      calcFormal();
-      saveDraft();
+    // ==================== 6. 資料封裝與雲端同步 ====================
+    function getActiveGasUrl() {
+      const saved = localStorage.getItem(STORAGE_KEY_URL);
+      return (saved && saved.trim() !== '') ? saved.trim() : DEFAULT_GAS_URL;
     }
 
-    function calcFormal() {
-      const s1Net = state.formal.stage1.reduce((a, b) => a + b.sNet, 0);
-      const s1Zone = state.formal.stage1.reduce((a, b) => a + b.sZone, 0);
-      const serveA = state.formal.posBonusA + s1Net + s1Zone;
-      const s1Hit = state.formal.stage1.reduce((a, b) => a + b.rHit, 0);
-      const s1RZone = state.formal.stage1.reduce((a, b) => a + b.rZone, 0);
-      const recvB = s1Hit + s1RZone;
-
-      const s2Net = state.formal.stage2.reduce((a, b) => a + b.sNet, 0);
-      const s2Zone = state.formal.stage2.reduce((a, b) => a + b.sZone, 0);
-      const serveB = state.formal.posBonusB + s2Net + s2Zone;
-      const s2Hit = state.formal.stage2.reduce((a, b) => a + b.rHit, 0);
-      const s2RZone = state.formal.stage2.reduce((a, b) => a + b.rZone, 0);
-      const recvA = s2Hit + s2RZone;
-
-      const totalA = serveA + recvA, totalB = serveB + recvB, pairTotal = totalA + totalB;
-      document.getElementById('form-s1-serve-sub').textContent = serveA;
-      document.getElementById('form-s1-recv-sub').textContent = recvB;
-      document.getElementById('form-s2-serve-sub').textContent = serveB;
-      document.getElementById('form-s2-recv-sub').textContent = recvA;
-      document.getElementById('form-total-A').textContent = totalA;
-      document.getElementById('form-sub-serve-A').textContent = serveA;
-      document.getElementById('form-sub-recv-A').textContent = recvA;
-      document.getElementById('form-total-B').textContent = totalB;
-      document.getElementById('form-sub-serve-B').textContent = serveB;
-      document.getElementById('form-sub-recv-B').textContent = recvB;
-      document.getElementById('form-pair-total').textContent = pairTotal;
-
-      return { s1Net, s1Zone, serveA, s1Hit, s1RZone, recvB, s2Net, s2Zone, serveB, s2Hit, s2RZone, recvA, totalA, totalB, pairTotal };
+    function initGasConnection() {
+      const url = getActiveGasUrl();
+      document.getElementById('gasUrlInput').value = url;
+      updateGasStatusUI(Boolean(url));
     }
 
-    function renderFeedbackCards() {
-      const esc = s => (s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-      document.getElementById('formal-feedback-grid').innerHTML = ['A', 'B'].map(p => {
-        const fb = state.formal[`fb${p}`];
-        const name = document.getElementById(`form-name${p}`)?.value.trim() || `同學 ${p}`;
-        return `
-          <div class="border-2 ${p === 'A' ? 'border-teal-200' : 'border-sky-200'} rounded-2xl overflow-hidden bg-slate-50/50">
-            <div class="${p === 'A' ? 'bg-brand-teal' : 'bg-sky-600'} text-white px-3.5 py-2 font-black text-sm form-label-${p}">${esc(name)}</div>
-            <div class="p-3 space-y-2.5 text-xs">
-              <div class="font-black text-brand-navy"><i class="fa-solid fa-eye text-brand-amber mr-1"></i>同儕回饋（C 組觀察）</div>
-              <button type="button" onclick="toggleFbBool('${p}','peerFluent')"
-                class="touch-btn min-h-0 py-2 px-3 w-full rounded-xl border-2 font-black flex justify-between items-center ${fb.peerFluent ? 'bg-brand-teal border-brand-teal text-white' : 'bg-white border-slate-200 text-slate-700'}">
-                <span>動作流暢</span><i class="fa-solid ${fb.peerFluent ? 'fa-square-check' : 'fa-regular fa-square'}"></i>
-              </button>
-              <div class="flex flex-wrap gap-1">
-                ${KEY_POINTS.map(kp => `<button type="button" onclick="toggleFbTag('${p}','peerMissing','${kp}')"
-                  class="touch-btn min-h-0 py-1 px-2 rounded-full text-[11px] font-bold border ${fb.peerMissing.includes(kp) ? 'bg-rose-600 border-rose-600 text-white' : 'bg-white border-slate-300 text-slate-600'}">${kp}</button>`).join('')}
-              </div>
-              <input type="text" value="${esc(fb.peerNote)}" oninput="state.formal.fb${p}.peerNote=this.value;saveDraft();" placeholder="同儕建議（選填）..."
-                class="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 outline-none" />
-
-              <div class="pt-2 border-t border-slate-200 font-black text-brand-navy"><i class="fa-solid fa-user-check text-brand-teal mr-1"></i>自我評量</div>
-              <button type="button" onclick="toggleFbBool('${p}','selfBetter')"
-                class="touch-btn min-h-0 py-2 px-3 w-full rounded-xl border-2 font-black flex justify-between items-center ${fb.selfBetter ? 'bg-brand-amber border-amber-500 text-brand-navy' : 'bg-white border-slate-200 text-slate-700'}">
-                <span>比之前的表現更好</span><i class="fa-solid ${fb.selfBetter ? 'fa-square-check' : 'fa-regular fa-square'}"></i>
-              </button>
-              <div class="flex flex-wrap gap-1">
-                ${KEY_POINTS.map(kp => `<button type="button" onclick="toggleFbTag('${p}','selfMissing','${kp}')"
-                  class="touch-btn min-h-0 py-1 px-2 rounded-full text-[11px] font-bold border ${fb.selfMissing.includes(kp) ? 'bg-amber-600 border-amber-600 text-white' : 'bg-white border-slate-300 text-slate-600'}">${kp}</button>`).join('')}
-              </div>
-              <input type="text" value="${esc(fb.selfNote)}" oninput="state.formal.fb${p}.selfNote=this.value;saveDraft();" placeholder="自我心得補充（選填）..."
-                class="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 outline-none" />
-            </div>
-          </div>`;
-      }).join('');
+    function updateGasStatusUI(connected) {
+      const btn = document.getElementById('gasStatusBtn');
+      const dot = document.getElementById('gasStatusDot');
+      const txt = document.getElementById('gasStatusText');
+      if (connected) {
+        btn.className = 'flex items-center gap-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold px-2.5 py-1.5 rounded-full transition';
+        dot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+        txt.textContent = '試算表已連線';
+      } else {
+        btn.className = 'flex items-center gap-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 text-xs font-bold px-2.5 py-1.5 rounded-full transition';
+        dot.className = 'w-2 h-2 rounded-full bg-rose-400';
+        txt.textContent = '試算表未設定';
+      }
     }
 
-    function toggleFbBool(p, key) { state.formal[`fb${p}`][key] = !state.formal[`fb${p}`][key]; renderFeedbackCards(); saveDraft(); }
-    function toggleFbTag(p, arrKey, val) {
-      const arr = state.formal[`fb${p}`][arrKey];
-      const idx = arr.indexOf(val);
-      idx > -1 ? arr.splice(idx, 1) : arr.push(val);
-      renderFeedbackCards(); saveDraft();
-    }
-
-    // =========================================================================
-    // 7. Google Sheet 連線與逐球歷程打包送出
-    // =========================================================================
-    function syncGasUI() {
-      const url = localStorage.getItem(KEYS.GAS) || '';
-      document.getElementById('gas-url-input').value = url;
-      const ok = url.startsWith('https://script.google.com/');
-      document.getElementById('header-gas-dot').className = ok ? 'w-2 h-2 rounded-full bg-brand-teal' : 'w-2 h-2 rounded-full bg-rose-400 animate-pulse';
-      document.getElementById('header-gas-text').textContent = ok ? '試算表已連線' : '試算表未設定';
+    function toggleGasPanel() {
+      document.getElementById('gasPanel').classList.toggle('hidden');
     }
 
     function saveGasUrl() {
-      const url = document.getElementById('gas-url-input').value.trim();
-      if (url && !url.startsWith('https://script.google.com/')) return showToast('請輸入正確的 https://script.google.com/ 網址', 'error');
-      localStorage.setItem(KEYS.GAS, url);
-      syncGasUI();
-      showToast(url ? '已儲存試算表連線網址！' : '已清除連線網址', 'success');
+      const val = document.getElementById('gasUrlInput').value.trim();
+      localStorage.setItem(STORAGE_KEY_URL, val);
+      updateGasStatusUI(Boolean(val));
+      showToast('☁️ 試算表網址已儲存！');
     }
 
-    async function testGasConnection() {
-      const url = document.getElementById('gas-url-input').value.trim();
-      if (!url.startsWith('https://script.google.com/')) return showToast('請先輸入有效的 Apps Script 網址', 'warning');
-      try {
-        await fetch(url, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ mode: 'ping' }) });
-        showToast('已發送測試訊號至 Google Apps Script！', 'success');
-      } catch {
-        showToast('連線測試失敗，請確認網路與權限設定', 'error');
+    function resetDefaultGasUrl() {
+      localStorage.removeItem(STORAGE_KEY_URL);
+      document.getElementById('gasUrlInput').value = DEFAULT_GAS_URL;
+      updateGasStatusUI(true);
+      showToast('🔄 已恢復預設試算表連線！');
+    }
+
+    // 送出預試檢測
+    async function submitPretest() {
+      const nameA = document.getElementById('pre-a-name').value.trim();
+      const nameB = document.getElementById('pre-b-name').value.trim();
+      if (!nameA || !nameB) {
+        showToast('⚠️ 請先填寫同學 A 與同學 B 的姓名！');
+        return;
       }
-    }
 
-    function copyGasCode() {
-      const ta = document.createElement('textarea');
-      ta.value = GAS_BACKEND_SCRIPT;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-      showToast('已複製最新版逐球歷程 GAS 程式碼！', 'success');
-    }
+      let s1A = 0, s1B = 0, s2B = 0, s2A = 0;
+      const flatBalls = [];
+      const summaryParts = [];
 
-    function formatTrialStage(trials, sName, rName, label) {
-      const structured = trials.map((t, idx) => {
-        const sTxt = t.sZone ? '過網+落區(2)' : (t.sNet ? '過網(1)' : '失誤(0)');
-        const rTxt = t.rZone ? '接到+落區(2)' : (t.rHit ? '接到(1)' : '未接到(0)');
-        return { ballNo: idx + 1, sNet: t.sNet, sZone: t.sZone, rHit: t.rHit, rZone: t.rZone, text: `第${idx + 1}球[${sName}發:${sTxt}/${rName}接:${rTxt}]` };
+      preScores.s1.forEach((b, i) => {
+        s1A += b[0] + b[1]; s1B += b[2] + b[3];
+        flatBalls.push(...b);
+        summaryParts.push(`S1第${i+1}球[A發(${b[0]},${b[1]})/B接(${b[2]},${b[3]})]`);
       });
-      return { structured, summary: `【${label}】` + structured.map(x => x.text).join('；') };
-    }
+      preScores.s2.forEach((b, i) => {
+        s2B += b[0] + b[1]; s2A += b[2] + b[3];
+        flatBalls.push(...b);
+        summaryParts.push(`S2第${i+1}球[B發(${b[0]},${b[1]})/A接(${b[2]},${b[3]})]`);
+      });
 
-    async function submitData(mode) {
-      const pfx = mode === 'pretest' ? 'pre' : 'form';
-      const nameA = document.getElementById(`${pfx}-nameA`).value.trim();
-      const nameB = document.getElementById(`${pfx}-nameB`).value.trim();
-      if (!nameA || !nameB) return showToast('請先填寫同學 A 與同學 B 的姓名！', 'warning');
+      const totalA = s1A + s2A;
+      const totalB = s1B + s2B;
 
-      const now = new Date();
-      const ts = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-      const base = {
-        mode, timestamp: ts,
-        className: document.getElementById(`${pfx}-className`).value.trim() || '未填班級',
-        groupName: document.getElementById(`${pfx}-groupName`).value,
-        observerName: document.getElementById(`${pfx}-observerName`).value.trim() || '未填觀察員',
-        synced: false
+      const payload = {
+        mode: 'pretest',
+        timestamp: new Date().toLocaleString('zh-TW', { hour12: false }),
+        className: document.getElementById('pre-class').value.trim() || '未填寫',
+        group: document.getElementById('pre-group').value,
+        aName: nameA,
+        aId: document.getElementById('pre-a-id').value.trim(),
+        aGender: document.getElementById('pre-a-gender').value,
+        aServeScore: s1A,
+        aReceiveScore: s2A,
+        aTotal: totalA,
+        aRecommend: getRecommendDist(totalA).text,
+        bName: nameB,
+        bId: document.getElementById('pre-b-id').value.trim(),
+        bGender: document.getElementById('pre-b-gender').value,
+        bServeScore: s2B,
+        bReceiveScore: s1B,
+        bTotal: totalB,
+        bRecommend: getRecommendDist(totalB).text,
+        balls: flatBalls,
+        summary: summaryParts.join(' ; ')
       };
 
-      let payload;
-      if (mode === 'pretest') {
-        const c = calcPretest();
-        const s1 = formatTrialStage(state.pretest.stage1, nameA, nameB, `階段一 ${nameA}發×${nameB}接`);
-        const s2 = formatTrialStage(state.pretest.stage2, nameB, nameA, `階段二 ${nameB}發×${nameA}接`);
-        payload = {
-          ...base,
-          studentA: { name: nameA, studentId: document.getElementById('pre-idA').value.trim() || '-', gender: document.getElementById('pre-genderA').value, serveScore: c.sA, recvScore: c.rA, totalScore: c.tA, recommendedDist: `${c.recA.label} (+${c.recA.bonus})` },
-          studentB: { name: nameB, studentId: document.getElementById('pre-idB').value.trim() || '-', gender: document.getElementById('pre-genderB').value, serveScore: c.sB, recvScore: c.rB, totalScore: c.tB, recommendedDist: `${c.recB.label} (+${c.recB.bonus})` },
-          stage1Trials: s1.structured, stage2Trials: s2.structured,
-          trialSummaryText: `${s1.summary} ｜ ${s2.summary}`
-        };
-      } else {
-        const c = calcFormal(), fbA = state.formal.fbA, fbB = state.formal.fbB;
-        const s1 = formatTrialStage(state.formal.stage1, nameA, nameB, `階段一 ${nameA}發(${state.formal.posLabelA})×${nameB}接`);
-        const s2 = formatTrialStage(state.formal.stage2, nameB, nameA, `階段二 ${nameB}發(${state.formal.posLabelB})×${nameA}接`);
-        payload = {
-          ...base, pairTotal: c.pairTotal,
-          studentA: { name: nameA, studentId: document.getElementById('form-idA').value.trim() || '-', gender: document.getElementById('form-genderA').value, servePosLabel: state.formal.posLabelA, servePosBonus: state.formal.posBonusA, serveNet: c.s1Net, serveZone: c.s1Zone, serveTotal: c.serveA, recvHit: c.s2Hit, recvZone: c.s2RZone, recvTotal: c.recvA, personalTotal: c.totalA, peerFluent: fbA.peerFluent ? '是' : '否', peerMissing: fbA.peerMissing.join('；') || '無', peerNote: fbA.peerNote, selfBetter: fbA.selfBetter ? '是' : '否', selfMissing: fbA.selfMissing.join('；') || '無', selfNote: fbA.selfNote },
-          studentB: { name: nameB, studentId: document.getElementById('form-idB').value.trim() || '-', gender: document.getElementById('form-genderB').value, servePosLabel: state.formal.posLabelB, servePosBonus: state.formal.posBonusB, serveNet: c.s2Net, serveZone: c.s2Zone, serveTotal: c.serveB, recvHit: c.s1Hit, recvZone: c.s1RZone, recvTotal: c.recvB, personalTotal: c.totalB, peerFluent: fbB.peerFluent ? '是' : '否', peerMissing: fbB.peerMissing.join('；') || '無', peerNote: fbB.peerNote, selfBetter: fbB.selfBetter ? '是' : '否', selfMissing: fbB.selfMissing.join('；') || '無', selfNote: fbB.selfNote },
-          stage1Trials: s1.structured, stage2Trials: s2.structured,
-          trialSummaryText: `${s1.summary} ｜ ${s2.summary}`
-        };
-      }
-
-      const gasUrl = localStorage.getItem(KEYS.GAS) || '';
-      if (gasUrl) {
-        try {
-          await fetch(gasUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
-          payload.synced = true;
-          showToast('逐球歷程紀錄已成功同步至 Google Sheet！', 'success');
-        } catch {
-          showToast('網路異常，已先存於本機紀錄！', 'warning');
-        }
-      } else {
-        showToast('尚未設定試算表網址，已先存於本機紀錄！', 'info');
-      }
-
-      const list = JSON.parse(localStorage.getItem(KEYS.BACKUP) || '[]');
-      list.unshift(payload);
-      localStorage.setItem(KEYS.BACKUP, JSON.stringify(list));
-      renderBackupList();
+      await sendRecordToCloud(payload);
     }
 
-    // =========================================================================
-    // 8. 草稿暫存、本機備份檢視與 CSV 匯出
-    // =========================================================================
-    function saveDraft() {
-      const fields = ['className', 'groupName', 'observerName', 'nameA', 'idA', 'genderA', 'nameB', 'idB', 'genderB'];
-      const pre = {}, form = {};
-      fields.forEach(k => { pre[k] = document.getElementById(`pre-${k}`).value; form[k] = document.getElementById(`form-${k}`).value; });
-      localStorage.setItem(KEYS.DRAFT, JSON.stringify({ pre, form, state }));
+    // 送出正式測驗
+    async function submitFormal() {
+      const nameA = document.getElementById('frm-a-name').value.trim();
+      const nameB = document.getElementById('frm-b-name').value.trim();
+      if (!nameA || !nameB) {
+        showToast('⚠️ 請先填寫同學 A 與同學 B 的姓名！');
+        return;
+      }
+
+      let s1A = 0, s1B = 0, s2B = 0, s2A = 0;
+      const flatBalls = [];
+      const summaryParts = [];
+
+      frmScores.s1.forEach((b, i) => {
+        s1A += b[0] + b[1]; s1B += b[2] + b[3];
+        flatBalls.push(...b);
+        summaryParts.push(`S1第${i+1}球[A發(${b[0]},${b[1]})/B接(${b[2]},${b[3]})]`);
+      });
+      frmScores.s2.forEach((b, i) => {
+        s2B += b[0] + b[1]; s2A += b[2] + b[3];
+        flatBalls.push(...b);
+        summaryParts.push(`S2第${i+1}球[B發(${b[0]},${b[1]})/A接(${b[2]},${b[3]})]`);
+      });
+
+      const distASel = document.getElementById('frm-a-dist');
+      const distBSel = document.getElementById('frm-b-dist');
+      const distABonus = parseInt(distASel.value, 10);
+      const distBBonus = parseInt(distBSel.value, 10);
+      const distALabel = distASel.options[distASel.selectedIndex].dataset.label;
+      const distBLabel = distBSel.options[distBSel.selectedIndex].dataset.label;
+
+      const totalA = s1A + distABonus + s2A;
+      const totalB = s2B + distBBonus + s1B;
+
+      const aKPs = Array.from(document.querySelectorAll('input[name="frm-a-kp"]:checked')).map(el => el.value).join('、') || '無';
+      const bKPs = Array.from(document.querySelectorAll('input[name="frm-b-kp"]:checked')).map(el => el.value).join('、') || '無';
+
+      const payload = {
+        mode: 'formal',
+        timestamp: new Date().toLocaleString('zh-TW', { hour12: false }),
+        className: document.getElementById('frm-class').value.trim() || '未填寫',
+        group: document.getElementById('frm-group').value,
+        pairTotal: totalA + totalB,
+        aName: nameA,
+        aId: document.getElementById('frm-a-id').value.trim(),
+        aGender: document.getElementById('frm-a-gender').value,
+        aDist: distALabel,
+        aDistBonus: distABonus,
+        aServeScore: s1A,
+        aReceiveScore: s2A,
+        aTotal: totalA,
+        aSmooth: document.getElementById('frm-a-smooth').checked ? '是' : '否',
+        aBetter: document.getElementById('frm-a-better').checked ? '是' : '否',
+        aMissingKP: aKPs,
+        aNote: document.getElementById('frm-a-note').value.trim(),
+        bName: nameB,
+        bId: document.getElementById('frm-b-id').value.trim(),
+        bGender: document.getElementById('frm-b-gender').value,
+        bDist: distBLabel,
+        bDistBonus: distBBonus,
+        bServeScore: s2B,
+        bReceiveScore: s1B,
+        bTotal: totalB,
+        bSmooth: document.getElementById('frm-b-smooth').checked ? '是' : '否',
+        bBetter: document.getElementById('frm-b-better').checked ? '是' : '否',
+        bMissingKP: bKPs,
+        bNote: document.getElementById('frm-b-note').value.trim(),
+        balls: flatBalls,
+        summary: summaryParts.join(' ; ')
+      };
+
+      await sendRecordToCloud(payload);
     }
 
-    function loadDraft() {
+    async function sendRecordToCloud(payload) {
+      saveToLocalBackup(payload);
+      const url = getActiveGasUrl();
+      if (!url) {
+        showToast('💾 已儲存至手機本機備份（尚未設定雲端網址）');
+        return;
+      }
+
+      showToast('⏳ 正在同步上傳至 Google Sheet...');
       try {
-        const d = JSON.parse(localStorage.getItem(KEYS.DRAFT));
-        if (!d) return;
-        Object.keys(d.pre || {}).forEach(k => { const el = document.getElementById(`pre-${k}`); if (el && d.pre[k]) el.value = d.pre[k]; });
-        Object.keys(d.form || {}).forEach(k => { const el = document.getElementById(`form-${k}`); if (el && d.form[k]) el.value = d.form[k]; });
-        if (d.state) {
-          state = d.state;
-          setFormalPos('A', state.formal.posBonusA || 10, state.formal.posLabelA || '3m');
-          setFormalPos('B', state.formal.posBonusB || 10, state.formal.posLabelB || '3m');
-        }
-        syncNames('pre'); syncNames('form');
-      } catch {}
+        await fetch(url, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        showToast('✅ 已成功送出並同步至 Google Sheet！');
+      } catch (err) {
+        console.error(err);
+        showToast('⚠️ 網路不穩，已先安全存入本機備份！');
+      }
     }
 
-    function renderBackupList() {
-      const list = JSON.parse(localStorage.getItem(KEYS.BACKUP) || '[]');
-      document.getElementById('header-backup-count').textContent = list.length;
-      const box = document.getElementById('backup-list-container');
-      if (!list.length) { box.innerHTML = '<div class="text-center py-4 text-xs text-slate-400">尚無本機暫存紀錄</div>'; return; }
-      box.innerHTML = list.map((r, i) => `
-        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-xs space-y-1">
-          <div class="flex items-center justify-between">
-            <span class="font-black text-brand-navy">${r.mode === 'pretest' ? '【預試 3組】' : '【正式 5組】'} ${r.className}・${r.groupName}</span>
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${r.synced ? 'bg-teal-100 text-teal-800' : 'bg-rose-100 text-rose-700'}">${r.synced ? '已同步' : '僅本機'}</span>
+    // ==================== 7. 清空重填 ====================
+    function resetPretestForm() {
+      if (!confirm('確定要清空預試檢測的分數與姓名嗎？')) return;
+      ['pre-a-name','pre-a-id','pre-b-name','pre-b-id'].forEach(id => document.getElementById(id).value = '');
+      preScores = { s1: [[0,0,0,0],[0,0,0,0],[0,0,0,0]], s2: [[0,0,0,0],[0,0,0,0],[0,0,0,0]] };
+      ['s1','s2'].forEach(s => { for (let i=0; i<3; i++) updateBallButtonsUI('pre', s, i, [0,0,0,0]); });
+      recalcPretest();
+      showToast('🧹 預試表單已清空');
+    }
+
+    function resetFormalForm() {
+      if (!confirm('確定要清空正式測驗的分數與回饋嗎？')) return;
+      ['frm-a-name','frm-a-id','frm-b-name','frm-b-id','frm-a-note','frm-b-note'].forEach(id => document.getElementById(id).value = '');
+      ['frm-a-smooth','frm-a-better','frm-b-smooth','frm-b-better'].forEach(id => document.getElementById(id).checked = false);
+      document.querySelectorAll('input[name="frm-a-kp"], input[name="frm-b-kp"]').forEach(el => el.checked = false);
+      frmScores = {
+        s1: [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],
+        s2: [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
+      };
+      ['s1','s2'].forEach(s => { for (let i=0; i<5; i++) updateBallButtonsUI('frm', s, i, [0,0,0,0]); });
+      recalcFormal();
+      showToast('🧹 正式測驗表單已清空');
+    }
+
+    // ==================== 8. 本機備份管理與 CSV 匯出 ====================
+    function getBackups() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY_BACKUP) || '[]'); }
+      catch { return []; }
+    }
+
+    function saveToLocalBackup(item) {
+      const list = getBackups();
+      list.unshift(item);
+      localStorage.setItem(STORAGE_KEY_BACKUP, JSON.stringify(list));
+      updateBackupBadge();
+    }
+
+    function updateBackupBadge() {
+      document.getElementById('backupCountBadge').textContent = getBackups().length;
+    }
+
+    function openBackupModal() {
+      const list = getBackups();
+      const container = document.getElementById('backupListContainer');
+      if (list.length === 0) {
+        container.innerHTML = '<div class="text-center text-slate-400 py-8">目前尚無本機備份紀錄</div>';
+      } else {
+        container.innerHTML = list.map((item, idx) => `
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 flex items-center justify-between gap-2">
+            <div>
+              <div class="font-black text-slate-800">
+                <span class="px-1.5 py-0.5 rounded text-[10px] ${item.mode === 'pretest' ? 'bg-sky-100 text-sky-800' : 'bg-amber-100 text-amber-800'}">
+                  ${item.mode === 'pretest' ? '預試' : '正式'}
+                </span>
+                ${item.group}｜${item.aName} (${item.aTotal}分) & ${item.bName} (${item.bTotal}分)
+              </div>
+              <div class="text-[11px] text-slate-400 mt-0.5">${item.timestamp} · ${item.className}</div>
+            </div>
+            <button onclick="resendSingleBackup(${idx})" class="bg-slate-900 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg shrink-0">重送雲端</button>
           </div>
-          <div class="text-slate-700 font-bold">${r.studentA.name} & ${r.studentB.name}（${r.timestamp}）</div>
-          <details class="bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-[11px] text-slate-600">
-            <summary class="font-bold text-brand-navy cursor-pointer">檢視逐球過程歷程</summary>
-            <div class="mt-1 leading-relaxed break-words">${r.trialSummaryText || ''}</div>
-          </details>
-        </div>`).join('');
+        `).join('');
+      }
+      document.getElementById('backupModal').classList.remove('hidden');
     }
 
-    function clearAllBackups() {
-      localStorage.removeItem(KEYS.BACKUP);
-      renderBackupList();
-      showToast('已清除本機紀錄', 'info');
+    function closeBackupModal() {
+      document.getElementById('backupModal').classList.add('hidden');
     }
 
-    function exportAllCSV() {
-      const list = JSON.parse(localStorage.getItem(KEYS.BACKUP) || '[]');
-      if (!list.length) return showToast('尚無可匯出的本機紀錄', 'warning');
-      const headers = ['類型','提交時間','班級','組別','觀察員C','A姓名','A學號','A總分','B姓名','B學號','B總分','逐球過程摘要'];
+    async function resendSingleBackup(idx) {
+      const item = getBackups()[idx];
+      if (!item) return;
+      const url = getActiveGasUrl();
+      showToast('⏳ 正在重新傳送...');
+      await fetch(url, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(item)
+      });
+      showToast('✅ 已重新傳送至 Google Sheet！');
+    }
+
+    function clearBackups() {
+      if (!confirm('確定要清空所有手機本機備份紀錄嗎？')) return;
+      localStorage.removeItem(STORAGE_KEY_BACKUP);
+      updateBackupBadge();
+      openBackupModal();
+    }
+
+    function exportBackupCSV() {
+      const list = getBackups();
+      if (list.length === 0) { showToast('⚠️ 目前沒有可匯出的紀錄'); return; }
+      const headers = ['時間','類型','班級','組別','A姓名','A學號','A性別','A總分','B姓名','B學號','B性別','B總分','逐球歷程摘要'];
       const rows = list.map(r => [
-        r.mode === 'pretest' ? '預試(3組)' : '正式(5組)', r.timestamp, r.className, r.groupName, r.observerName,
-        r.studentA.name, r.studentA.studentId, r.mode === 'pretest' ? r.studentA.totalScore : r.studentA.personalTotal,
-        r.studentB.name, r.studentB.studentId, r.mode === 'pretest' ? r.studentB.totalScore : r.studentB.personalTotal,
-        r.trialSummaryText || ''
+        r.timestamp, r.mode === 'pretest' ? '預試' : '正式', r.className, r.group,
+        r.aName, r.aId, r.aGender, r.aTotal, r.bName, r.bId, r.bGender, r.bTotal, r.summary
       ].map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','));
-      const blob = new Blob(['\uFEFF' + [headers.join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `排球有球必in_逐球評量紀錄_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = `排球有球必in評量紀錄_${new Date().toISOString().slice(0,10)}.csv`;
       a.click();
-      showToast('已匯出 CSV 備份檔！', 'success');
+    }
+
+    // ==================== 9. 教師端 GAS 程式碼檢視 ====================
+    const GAS_SOURCE_CODE = `function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    
+    if (data.mode === 'pretest') {
+      var sheetName = '預試檢測紀錄';
+      var sheet = ss.getSheetByName(sheetName);
+      if (!sheet) {
+        sheet = ss.insertSheet(sheetName);
+        var preHeaders = [
+          '填寫時間', '班級', '組別',
+          'A姓名', 'A學號', 'A性別', 'A發球分', 'A接發分', 'A總分', 'A推薦正式線',
+          'B姓名', 'B學號', 'B性別', 'B發球分', 'B接發分', 'B總分', 'B推薦正式線'
+        ];
+        for (var s = 1; s <= 2; s++) {
+          for (var b = 1; b <= 3; b++) {
+            preHeaders.push('S'+s+'_第'+b+'球_發過網', 'S'+s+'_第'+b+'球_發落區', 'S'+s+'_第'+b+'球_接接到', 'S'+s+'_第'+b+'球_接落區');
+          }
+        }
+        preHeaders.push('預試逐球過程摘要');
+        sheet.appendRow(preHeaders);
+        sheet.setFrozenRows(1);
+      }
+      var preRow = [
+        data.timestamp, data.className, data.group,
+        data.aName, data.aId, data.aGender, data.aServeScore, data.aReceiveScore, data.aTotal, data.aRecommend,
+        data.bName, data.bId, data.bGender, data.bServeScore, data.bReceiveScore, data.bTotal, data.bRecommend
+      ].concat(data.balls || []).concat([data.summary]);
+      sheet.appendRow(preRow);
+      
+    } else {
+      var sheetName = '正式測驗紀錄';
+      var sheet = ss.getSheetByName(sheetName);
+      if (!sheet) {
+        sheet = ss.insertSheet(sheetName);
+        var frmHeaders = [
+          '填寫時間', '班級', '組別', '雙人合作總分',
+          'A姓名', 'A學號', 'A性別', 'A發球距離', 'A距離加分', 'A發球表現分', 'A接發表現分', 'A個人總分', 'A動作流暢', 'A比之前更好', 'A未做到KP', 'A觀察建議',
+          'B姓名', 'B學號', 'B性別', 'B發球距離', 'B距離加分', 'B發球表現分', 'B接發表現分', 'B個人總分', 'B動作流暢', 'B比之前更好', 'B未做到KP', 'B觀察建議'
+        ];
+        for (var s = 1; s <= 2; s++) {
+          for (var b = 1; b <= 5; b++) {
+            frmHeaders.push('S'+s+'_第'+b+'球_發過網', 'S'+s+'_第'+b+'球_發落區', 'S'+s+'_第'+b+'球_接接到', 'S'+s+'_第'+b+'球_接落區');
+          }
+        }
+        frmHeaders.push('正式逐球過程摘要');
+        sheet.appendRow(frmHeaders);
+        sheet.setFrozenRows(1);
+      }
+      var frmRow = [
+        data.timestamp, data.className, data.group, data.pairTotal,
+        data.aName, data.aId, data.aGender, data.aDist, data.aDistBonus, data.aServeScore, data.aReceiveScore, data.aTotal, data.aSmooth, data.aBetter, data.aMissingKP, data.aNote,
+        data.bName, data.bId, data.bGender, data.bDist, data.bDistBonus, data.bServeScore, data.bReceiveScore, data.bTotal, data.bSmooth, data.bBetter, data.bMissingKP, data.bNote
+      ].concat(data.balls || []).concat([data.summary]);
+      sheet.appendRow(frmRow);
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({ status: 'success' })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
+  }
+}`;
+
+    function openGasCodeModal() {
+      document.getElementById('gasScriptCode').textContent = GAS_SOURCE_CODE;
+      document.getElementById('gasCodeModal').classList.remove('hidden');
+    }
+
+    function closeGasCodeModal() {
+      document.getElementById('gasCodeModal').classList.add('hidden');
+    }
+
+    function copyGasScript() {
+      navigator.clipboard.writeText(GAS_SOURCE_CODE).then(() => {
+        showToast('📋 已複製新版 GAS 程式碼！');
+      });
+    }
+
+    function showToast(msg) {
+      const box = document.getElementById('toastBox');
+      box.textContent = msg;
+      box.classList.remove('hidden');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => box.classList.add('hidden'), 3200);
     }
   </script>
 </body>
